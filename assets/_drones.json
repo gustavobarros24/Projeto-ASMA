@@ -1,0 +1,39 @@
+{
+  "drones": [
+    {
+      "id": "DRONE001",
+      "model": "DJI Matrice 300",
+      "capacity_kg": 5.0,
+      "speed_kmh": 72,
+      "battery_percent": 100
+    },
+    {
+      "id": "DRONE002",
+      "model": "DJI Phantom 4 Pro",
+      "capacity_kg": 1.5,
+      "speed_kmh": 60,
+      "battery_percent": 100
+    },
+    {
+      "id": "DRONE003",
+      "model": "Autel EVO II",
+      "capacity_kg": 2.0,
+      "speed_kmh": 72,
+      "battery_percent": 100
+    },
+    {
+      "id": "DRONE004",
+      "model": "Skydio X2",
+      "capacity_kg": 3.0,
+      "speed_kmh": 65,
+      "battery_percent": 100
+    },
+    {
+      "id": "DRONE005",
+      "model": "Wingcopter 198",
+      "capacity_kg": 6.0,
+      "speed_kmh": 100,
+      "battery_percent": 100
+    }
+  ]
+}

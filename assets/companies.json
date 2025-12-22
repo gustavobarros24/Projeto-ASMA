@@ -1,0 +1,53 @@
+{
+  "companies": [
+    {
+      "id": "WALMART",
+      "name": "Walmart",
+      "industry": "Retail",
+      "headquarters": "United States",
+      "annual_revenue_usd": 680000000000,
+      "url": "https://www.walmart.com"
+    },
+    {
+      "id": "AMAZON",
+      "name": "Amazon.com",
+      "industry": "E‑Commerce & Cloud",
+      "headquarters": "United States",
+      "annual_revenue_usd": 638000000000,
+      "url": "https://www.amazon.com"
+    },
+    {
+      "id": "APPLE",
+      "name": "Apple",
+      "industry": "Technology",
+      "headquarters": "United States",
+      "annual_revenue_usd": 394000000000,
+      "url": "https://www.apple.com"
+    },
+    {
+      "id": "IKEA",
+      "name": "IKEA",
+      "industry": "Retail (Furniture & Home Goods)",
+      "headquarters": "Netherlands / Sweden",
+      "annual_revenue_usd": 45100000000,
+      "url": "https://www.ikea.com"
+    },
+    {
+      "id": "ALIBABA",
+      "name": "Alibaba Group",
+      "industry": "E‑Commerce & Technology",
+      "headquarters": "China",
+      "annual_revenue_usd": 109000000000,
+      "url": "https://www.alibaba.com"
+    },
+    {
+      "id": "NIKE",
+      "name": "Nike",
+      "industry": "Apparel & Footwear",
+      "headquarters": "United States",
+      "annual_revenue_usd": 51000000000,
+      "url": "https://www.nike.com"
+    }
+  ]
+}
+

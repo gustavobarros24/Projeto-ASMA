@@ -1,0 +1,100 @@
+{
+  "items": [
+    {
+      "item_id": "WALMART_ITEM_001",
+      "company_id": "WALMART",
+      "name": "Onn 43\" 4K Smart TV",
+      "description": "Large screen smart TV for home entertainment",
+      "price_usd": 249.00,
+      "weight_kg": 8.5
+    },
+    {
+      "item_id": "WALMART_ITEM_002",
+      "company_id": "WALMART",
+      "name": "Great Value Whole Milk",
+      "description": "Grocery — whole milk, 1 gallon",
+      "price_usd": 3.28,
+      "weight_kg": 3.8
+    },
+    {
+      "item_id": "AMAZON_ITEM_001",
+      "company_id": "AMAZON",
+      "name": "TAGRY Bluetooth Headphones",
+      "description": "True wireless Bluetooth headphones",
+      "price_usd": 35.99,
+      "weight_kg": 0.25
+    },
+    {
+      "item_id": "AMAZON_ITEM_002",
+      "company_id": "AMAZON",
+      "name": "Mini Laptop 8 inch HD",
+      "description": "Compact laptop for basic tasks",
+      "price_usd": 469.00,
+      "weight_kg": 1.2
+    },
+    {
+      "item_id": "APPLE_ITEM_001",
+      "company_id": "APPLE",
+      "name": "Apple AirPods Pro (2nd gen)",
+      "description": "Premium noise cancelling earbuds",
+      "price_usd": 218.11,
+      "weight_kg": 0.05
+    },
+    {
+      "item_id": "APPLE_ITEM_002",
+      "company_id": "APPLE",
+      "name": "iPad 10th Generation",
+      "description": "Latest generation Apple tablet",
+      "price_usd": 349.00,
+      "weight_kg": 0.6
+    },
+    {
+      "item_id": "IKEA_ITEM_001",
+      "company_id": "IKEA",
+      "name": "LACK Coffee Table",
+      "description": "Simple, lightweight coffee table",
+      "price_usd": 49.99,
+      "weight_kg": 7.0
+    },
+    {
+      "item_id": "IKEA_ITEM_002",
+      "company_id": "IKEA",
+      "name": "MALM Bed Frame",
+      "description": "Queen size bed frame set",
+      "price_usd": 229.00,
+      "weight_kg": 32.0
+    },
+    {
+      "item_id": "ALIBABA_ITEM_001",
+      "company_id": "ALIBABA",
+      "name": "Wireless Earbuds (Bulk)",
+      "description": "Bulk pack of wireless earbuds sourced via Alibaba",
+      "price_usd": 15.50,
+      "weight_kg": 0.45
+    },
+    {
+      "item_id": "ALIBABA_ITEM_002",
+      "company_id": "ALIBABA",
+      "name": "Portable Solar Garden Lights",
+      "description": "Set of garden solar lights",
+      "price_usd": 29.99,
+      "weight_kg": 1.1
+    },
+    {
+      "item_id": "NIKE_ITEM_001",
+      "company_id": "NIKE",
+      "name": "Nike Air Max Shoes",
+      "description": "Popular athletic sneakers",
+      "price_usd": 130.00,
+      "weight_kg": 1.0
+    },
+    {
+      "item_id": "NIKE_ITEM_002",
+      "company_id": "NIKE",
+      "name": "Nike Dri‑Fit Performance Tee",
+      "description": "Lightweight athletic shirt",
+      "price_usd": 30.00,
+      "weight_kg": 0.2
+    }
+  ]
+}
