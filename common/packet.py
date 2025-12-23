@@ -1,6 +1,5 @@
 import jsonpickle
 
-from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Dict, List
@@ -29,7 +28,7 @@ class Packet:
 		return jsonpickle.encode( self ).encode( "utf-8" )
 
 	@staticmethod
-	def deserialize( data: bytes ) -> Packet:
+	def deserialize( data: bytes ) -> "Packet":
 		return jsonpickle.decode( data.decode( "utf-8" ) )
 
 @dataclass

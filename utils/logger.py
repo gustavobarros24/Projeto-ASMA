@@ -19,7 +19,7 @@ def get_logger( name: str, log_dir: str = ".", log_filename: str = None, console
 
 	log_path = os.path.join( log_dir, log_filename )
 
-	logger = logging.getLogger()
+	logger = logging.getLogger( name )
 	logger.setLevel( logging.DEBUG )
 	logger.propagate = False
 

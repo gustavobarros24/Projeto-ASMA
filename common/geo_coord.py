@@ -1,6 +1,5 @@
 import random
 
-from __future__ import annotations
 from dataclasses import dataclass
 from math import radians, sin, cos, asin, sqrt
 from typing import Optional, Tuple
@@ -31,11 +30,11 @@ class GeoCoord:
 	altitude_m: Optional[float] = None
 
 	def __init__( self, latitude: float, longitude: float, altitude_m: Optional[float] = None ):
-		if not _LAT_MIN <= self.latitude <= _LAT_MAX:
-			raise ValueError( f"Latitude out of range: { self.latitude }" )
+		if not _LAT_MIN <= latitude <= _LAT_MAX:
+			raise ValueError( f"Latitude out of range: { latitude }" )
 
-		if not _LON_MIN <= self.longitude < _LON_MAX:
-			raise ValueError( f"Longitude out of range: { self.longitude }" )
+		if not _LON_MIN <= longitude < _LON_MAX:
+			raise ValueError( f"Longitude out of range: { longitude }" )
 
 		self.latitude = latitude
 		self.longitude = longitude
@@ -47,7 +46,7 @@ class GeoCoord:
 	def latlonalt( self ) -> Tuple[float, float, Optional[float]]:
 		return ( self.latitude, self.longitude, self.altitude_m )
 
-	def distance_to( self, other: GeoCoord ) -> float:
+	def distance_to( self, other: "GeoCoord" ) -> float:
 		# harvsine formula
 		self._validate_other( other )
 
@@ -62,7 +61,7 @@ class GeoCoord:
 
 		return _WGS84_EARTH_RADIUS_M * c
 
-	def almost_equals( self, other: GeoCoord, *, tol_deg: float = _TOLERANCE_LATLON_DEGREE, tol_alt_m: float = _TOLERANCE_ALT_M ) -> bool:
+	def almost_equals( self, other: "GeoCoord", *, tol_deg: float = _TOLERANCE_LATLON_DEGREE, tol_alt_m: float = _TOLERANCE_ALT_M ) -> bool:
 		# use this function to compare, because of floating point precision issues
 		self._validate_other( other )
 
@@ -76,7 +75,7 @@ class GeoCoord:
 
 		return abs( self.altitude_m - other.altitude_m ) <= tol_alt_m
 
-	def _validate_other( self, other: GeoCoord ) -> None:
+	def _validate_other( self, other: "GeoCoord" ) -> None:
 		if not isinstance( other, GeoCoord ):
 			raise TypeError( f"Expected GeoCoord, got {type( other )!r}")
 

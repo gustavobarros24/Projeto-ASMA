@@ -1,4 +1,3 @@
-from __future__ import annotations
 from typing import Optional, Tuple, Dict
 from spade.behaviour import CyclicBehaviour
 from spade.message import Message

@@ -18,6 +18,14 @@ Activate the environment with:
 conda activate ASMA
 ```
 
-## 3. SPADE Setup
+# 3. Update Environment
+
+Update the environment with:
+
+```bash
+conda env update -f environment.yml --prune
+```
+
+## 4. SPADE Setup
 
 For SPADE to work, the DOMAIN needs to be the PC name.

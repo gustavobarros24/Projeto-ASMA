@@ -1,8 +1,9 @@
 import spade
 
-from .client_agent import *
+from client_agent import *
 from config.config import *
 from common.geo_coord import *
+from ui import *
 
 """
 ===============================================================================
@@ -24,6 +25,9 @@ async def main():
 	try:
 		client_agent = ClientAgent( get_agent_jid( _CLIENT_NAME ), _CLIENT_PASSWORD, _BUDGET, _CLIENT_LOCATION )
 		await client_agent.start( auto_register = True )
+
+		log.info( "Starting ui..." )
+		await terminal_ui(client_agent)
 	except Exception as e:
 		log.critical( e )
 	

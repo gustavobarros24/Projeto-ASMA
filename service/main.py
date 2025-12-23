@@ -3,6 +3,7 @@ import asyncio
 import json
 
 from utils.logger import * 
+from utils.utils import *
 from central.central_agent import *
 from company.company_agent import *
 from drone.drone_agent import *
@@ -23,7 +24,7 @@ _DEFAULT_PASSWORD = "123"
 log = get_logger( name = "startup", log_dir = "logs", console = True )
 
 def _load_companies():
-	with open( "../assets/companies.json" ) as f:
+	with open( COMPANIES_PATH ) as f:
 		data = json.load( f )
 	return [
 		{
@@ -35,7 +36,7 @@ def _load_companies():
 	]
 
 def _load_drones():
-	with open( "../assets/drones.json" ) as f:
+	with open( DRONES_PATH ) as f:
 		data = json.load( f )
 	return [
 		{
@@ -56,9 +57,10 @@ async def main():
 	log.info( f"Loaded drones: { drones }...")
 
 	try:
-		log.info( "Starting central..." )
-		central_agent = CentralAgent( get_agent_jid( _CENTRAL_NAME ), _DEFAULT_PASSWORD )
-		await central_agent.start( auto_register = True )
+		# to be completed...
+		# log.info( "Starting central..." )
+		# central_agent = CentralAgent( get_agent_jid( _CENTRAL_NAME ), _DEFAULT_PASSWORD )
+		# await central_agent.start( auto_register = True )
 
 		log.info( "Starting companies..." )
 		company_agents = []
@@ -67,12 +69,13 @@ async def main():
 			company_agents.append( agent )
 			await agent.start( auto_register = True )
 
-		log.info( "Starting drones..." )
-		drone_agents = []
-		for drone in drones:
-			agent = DroneAgent( drone["jid"], drone["password"], drone["info"] )
-			drone_agents.append( agent )
-			await agent.start( auto_register = True )
+		# to be completed...
+		# log.info( "Starting drones..." )
+		# drone_agents = []
+		# for drone in drones:
+		# 	agent = DroneAgent( drone["jid"], drone["password"], drone["info"] )
+		# 	drone_agents.append( agent )
+		# 	await agent.start( auto_register = True )
 
 	except Exception as e:
 		log.critical( e )
@@ -85,8 +88,8 @@ async def main():
 	except KeyboardInterrupt:
 		log.info( "Shutting down all agents..." )
 	finally:
-		await central_agent.stop()
-		for agent in company_agents + drone_agents:
+		#await central_agent.stop()
+		for agent in company_agents: #+ drone_agents:
 			await agent.stop()
 		log.info( "Shutdown complete..." )
 

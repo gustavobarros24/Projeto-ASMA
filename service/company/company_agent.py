@@ -1,11 +1,10 @@
-from __future__ import annotations
 from typing import Optional, Tuple, Dict
 from spade.agent import Agent
 from common.package import *
 from common.geo_coord import *
 from utils.logger import *
-from behaviour.buyer_behaviour import *
-from behaviour.receiver_behaviour import *
+from .behaviour.sender_behaviour import *
+from .behaviour.receiver_behaviour import *
 from common.item import *
 
 

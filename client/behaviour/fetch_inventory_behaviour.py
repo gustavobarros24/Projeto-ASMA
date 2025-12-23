@@ -27,7 +27,7 @@ class FetchBehaviour( OneShotBehaviour ):
 
 	async def run( self ):
 		log.info( f"Creating fetch packet for: { self.agent.jid }..." )
-		packet = FetchBehaviour( self.agent.jid )
+		packet = FetchInventoryPacket( self.agent.jid )
 
 		msg = Message( to = self.company_id )
 		msg.body = packet.serialize()

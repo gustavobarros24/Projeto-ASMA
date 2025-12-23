@@ -1,4 +1,3 @@
-from __future__ import annotations
 from typing import Optional, Tuple, Dict
 from spade.agent import Agent
 from common.package import *
@@ -6,6 +5,7 @@ from common.geo_coord import *
 from utils.logger import *
 from behaviour.buyer_behaviour import *
 from behaviour.receiver_behaviour import *
+from behaviour.fetch_inventory_behaviour import *
 from collections import defaultdict
 
 """
@@ -39,7 +39,7 @@ class ClientAgent( Agent ):
 		self.add_behaviour( ReceiverBehaviour() )
 
 	def get_inventory( self, company_id: str ):
-		self.add_behaviour(  )
+		self.add_behaviour( FetchBehaviour( company_id ) )
 
 	def clean_cache( self ):
 		self.available_items_cache.clear()

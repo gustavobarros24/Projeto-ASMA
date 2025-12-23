@@ -2,5 +2,8 @@ name: ASMA
 channels:
   - defaults
 dependencies:
-  - python=3.13
+  - python=3.11
   - jsonpickle
+  - pip
+  - pip:
+      - spade
