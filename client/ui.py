@@ -1,4 +1,5 @@
 import json
+import asyncio
 
 from typing import Dict
 from client_agent import *
@@ -13,7 +14,7 @@ from utils.utils import *
 ===============================================================================
 """
 
-# temp...
+# temporary file, only for tests. it will be eliminated in the future...
 
 def _load_companies(path: str) -> Dict[str, dict]:
 	"""
@@ -30,6 +31,7 @@ def _load_companies(path: str) -> Dict[str, dict]:
 	return companies
 
 async def terminal_ui(client: ClientAgent):
+	loop = asyncio.get_running_loop()
 	"""
 	Very simple terminal UI.
 	Blocking input is OK here because the agent runs independently.
@@ -54,7 +56,8 @@ exit                         Exit
 			)
 		
 		try:
-			raw = input("client> ").strip()
+			raw = await loop.run_in_executor(None, input)
+			raw = raw.strip()
 		except (EOFError, KeyboardInterrupt):
 			print("\nExiting...")
 			break
@@ -70,7 +73,7 @@ exit                         Exit
 
 		elif cmd == "fetch" and len(parts) == 2:
 			company_jid = parts[1]
-			client.get_inventory(company_jid)
+			await client.get_inventory(company_jid)
 			print(f"Requested inventory from {company_jid}")
 
 		elif cmd == "list":
@@ -92,11 +95,11 @@ exit                         Exit
 				print("Item not in cache. Fetch inventory first.")
 				continue
 
-			client.buy_item(company_jid, item_id)
+			await client.buy_item(company_jid, item_id)
 			print(f"Buy request sent for item {item_id}")
 
 		elif cmd == "clear":
-			client.clean_cache()
+			await client.clean_cache()
 			print("Inventory cache cleared")
 
 		elif cmd == "exit":

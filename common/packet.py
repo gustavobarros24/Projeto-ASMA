@@ -18,26 +18,25 @@ from .item import *
 
 @dataclass
 class Packet:
-	sender_jid: str
+	sender_id: str
 
-	def __init__( self, sender_jid: str ):
-		self.sender_jid = sender_jid
+	def __init__( self, sender_id: str ):
+		self.sender_id = sender_id
 
-	@classmethod
-	def serialize( self ) -> bytes:
-		return jsonpickle.encode( self ).encode( "utf-8" )
+	def serialize( self ) -> str:
+		return jsonpickle.encode( self )
 
 	@staticmethod
-	def deserialize( data: bytes ) -> "Packet":
-		return jsonpickle.decode( data.decode( "utf-8" ) )
+	def deserialize( data: str ) -> "Packet":
+		return jsonpickle.decode( data )
 
 @dataclass
 class RequestDronesPacket( Packet ):
 	company_budget: float
 	packages: Dict[str, Package]
 
-	def __init__( self, sender_jid: str, company_budget: float, packages: Dict[str, Package] ):
-		super().__init__( sender_jid )
+	def __init__( self, sender_id: str, company_budget: float, packages: Dict[str, Package] ):
+		super().__init__( sender_id )
 		self.company_budget = company_budget
 		self.packages = packages
 
@@ -46,8 +45,8 @@ class ResponseDronesPacket( Packet ):
 	packages: List[str]
 	cost: float
 
-	def __init__( self, sender_jid: str, packages: List[str], cost: float ):
-		super().__init__( sender_jid )
+	def __init__( self, sender_id: str, packages: List[str], cost: float ):
+		super().__init__( sender_id )
 		self.packages = packages
 		self.cost = cost
 
@@ -57,11 +56,11 @@ class DeliveryPacket( Packet ):
 	item_id: str
 	package: Package
 
-	def __init__( self, sender_jid: str, order_id: str, item_id: str, package: Package ):
-		super().__init__( sender_jid )
+	def __init__( self, sender_id: str, order_id: str, item_id: str, package: Package ):
+		super().__init__( sender_id )
 		self.order_id = order_id
 		self.item_id = item_id
-		self.payment = package
+		self.package = package
 
 @dataclass
 class BuyItemPacket( Packet ):
@@ -70,8 +69,8 @@ class BuyItemPacket( Packet ):
 	payment: float
 	client_location: GeoCoord
 
-	def __init__( self, sender_jid: str, order_id: int, item_id: str, payment: float, client_location: GeoCoord ):
-		super().__init__( sender_jid )
+	def __init__( self, sender_id: str, order_id: int, item_id: str, payment: float, client_location: GeoCoord ):
+		super().__init__( sender_id )
 		self.order_id = order_id
 		self.payment = payment
 		self.item_id = item_id
@@ -79,13 +78,13 @@ class BuyItemPacket( Packet ):
 
 @dataclass
 class FetchInventoryPacket( Packet ):
-	def __init__( self, sender_jid: str ):
-		super().__init__( sender_jid )
+	def __init__( self, sender_id: str ):
+		super().__init__( sender_id )
 
 @dataclass
 class InventoryPacket( Packet ):
 	inventory: Dict[str, Item]
 
-	def __init__( self, sender_jid: str, inventory: Dict[str, Item] ):
-		super().__init__( sender_jid )
+	def __init__( self, sender_id: str, inventory: Dict[str, Item] ):
+		super().__init__( sender_id )
 		self.inventory = inventory

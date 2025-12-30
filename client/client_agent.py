@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Dict
+from typing import Dict
 from spade.agent import Agent
 from common.package import *
 from common.geo_coord import *
@@ -19,15 +19,14 @@ from collections import defaultdict
 log = logging.getLogger( __name__ )
 
 class ClientAgent( Agent ):
-	jid: str
 	pending_orders: Dict[str, str]
 	available_items_cache: Dict[str, Item]
 	inventory: Dict[str, Dict[str, Item]]
 	budget: float
 	location: GeoCoord
 
-	def __init__( self, jid: str, password: str, budget: float , location: GeoCoord ):
-		super().__init__( jid, password )
+	def __init__( self, _id: str, _password: str, budget: float , location: GeoCoord ):
+		super().__init__( _id, _password )
 		self.pending_orders = {}
 		self.budget = budget
 		self.available_items_cache = {}
@@ -35,15 +34,18 @@ class ClientAgent( Agent ):
 		self.location = location
 
 	async def setup( self ):
-		log.info( f"Agent started: { self.jid }..." )
+		log.info( f"Agent started: { self.jid.node }..." )
 		self.add_behaviour( ReceiverBehaviour() )
 
-	def get_inventory( self, company_id: str ):
+	async def get_inventory( self, company_id: str ):
+		log.info( f"Getting inventory from: { company_id }..." )
 		self.add_behaviour( FetchBehaviour( company_id ) )
 
-	def clean_cache( self ):
+	async def clean_cache( self ):
+		log.info( "Clearing cache..." )
 		self.available_items_cache.clear()
 
-	def buy_item( self, seller_jid: str, item_id: str ):
+	async def buy_item( self, seller_jid: str, item_id: str ):
+		log.info( f"Buying item: { item_id } from { seller_jid }..." )
 		item = self.available_items_cache[item_id]
 		self.add_behaviour( BuyerBehaviour( seller_jid, self.jid, item ) )

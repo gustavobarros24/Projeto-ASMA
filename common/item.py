@@ -10,7 +10,7 @@ from utils.utils import *
 ===============================================================================
 """
 
-@dataclass( frozen = True, slots = True, unsafe_hash = True )
+@dataclass( slots = True, unsafe_hash = True )
 class Item:
 	item_id: str
 	company_id: str

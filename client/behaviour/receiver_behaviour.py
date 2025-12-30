@@ -1,7 +1,5 @@
-from __future__ import annotations
 from typing import Optional, Tuple, Dict
 from spade.behaviour import CyclicBehaviour
-from spade.message import Message
 from common.package import *
 from utils.logger import *
 from utils.utils import *
@@ -23,9 +21,9 @@ class ReceiverBehaviour( CyclicBehaviour ):
 	async def run( self ):
 		msg = await self.receive( timeout = _TIMEOUT )
 		if not msg:
-			log.warning( "Receive a None packet..." )
 			return
 
+		log.info( "Received a message..." )
 		try:
 			packet = Packet.deserialize( msg.body )
 		except Exception:

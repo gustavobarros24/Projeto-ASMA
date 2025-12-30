@@ -30,7 +30,7 @@ def _load_companies():
 		{
 			"jid": get_agent_jid( c["id"] ),
 			"password": _DEFAULT_PASSWORD,
-			"info": c
+			"annual_revenue_usd": c["annual_revenue_usd"]
 		}
 		for c in data["companies"]
 	]
@@ -65,7 +65,7 @@ async def main():
 		log.info( "Starting companies..." )
 		company_agents = []
 		for company in companies:
-			agent = CompanyAgent( company["jid"], company["password"], company["info"] )
+			agent = CompanyAgent( company["jid"], company["password"], company["annual_revenue_usd"] )
 			company_agents.append( agent )
 			await agent.start( auto_register = True )
 

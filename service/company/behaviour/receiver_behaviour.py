@@ -1,10 +1,9 @@
-from typing import Optional, Tuple, Dict
 from spade.behaviour import CyclicBehaviour
-from spade.message import Message
 from common.package import *
 from utils.logger import *
 from utils.utils import *
 from common.packet import *
+from utils.communication import *
 
 """
 ===============================================================================
@@ -16,14 +15,15 @@ from common.packet import *
 
 _TIMEOUT = 1 # second
 
-log = logging.getLogger( __name__ )
-
 class ReceiverBehaviour( CyclicBehaviour ):
-	async def run(self):
+	async def run( self ):
+		log = self.agent.log
+
 		msg = await self.receive( timeout = _TIMEOUT )
 		if not msg:
 			return
 
+		log.info( "Received a message..." )
 		try:
 			packet = Packet.deserialize( msg.body )
 		except Exception:
@@ -40,26 +40,29 @@ class ReceiverBehaviour( CyclicBehaviour ):
 			log.warning( f"Received unexpected packet: { packet }..." )
 
 	async def handle_fetch( self, packet: FetchInventoryPacket ):
-		inventory_packet = InventoryPacket( sender_id = self.agent.jid, inventory = self.agent.inventory )
-		msg = Message( to = packet.sender_jid )
-		msg.body = inventory_packet.serialize()
+		log = self.agent.log
+
+		inventory_packet = InventoryPacket( self.agent.jid.node, self.agent.inventory )
+		msg = new_message( inventory_packet, packet.sender_id )
 		await self.send( msg )
 		log.info( f"Sent inventory to { packet.sender_jid }...")
 
 	async def handle_buy( self, packet: BuyItemPacket ):
+		log = self.agent.log
+	
+		inventory = self.agent.inventory
 		item_id = packet.item_id
 		sender_jid = packet.sender_jid
-		if item_id in self.agent.inventory:
-			item = self.agent.inventory[item_id]
+		if item_id in inventory:
+			item = inventory[item_id]
 			log.info( f"Item { item_id } sold to { sender_jid }..." )
 
 			delivery_packet = DeliveryPacket(
-				sender_id = self.agent.jid,
+				sender_id = self.agent.jid.node,
 				order_id = packet.order_id,
 				item_id = item.id
 			)
-			msg = Message( to = sender_jid )
-			msg.body = delivery_packet.serialize()
+			msg = new_message( delivery_packet, packet.sender_id )
 			await self.send( msg )
 			log.info( f"Sent delivery confirmation for order { packet.order_id }...")
 		else:

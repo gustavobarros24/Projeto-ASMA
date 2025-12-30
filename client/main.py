@@ -18,25 +18,23 @@ _CLIENT_PASSWORD = "123"
 _CLIENT_LOCATION = GeoCoord.random_geocoord()
 _BUDGET = 5000.00 
 
-log = get_logger( name = _CLIENT_NAME, log_dir = "logs", console = True )
+log = get_logger( name = _CLIENT_NAME, log_dir = "logs", console = False )
 
 async def main():
 	log.info( f"Starting { _CLIENT_NAME }..." )
 	try:
 		client_agent = ClientAgent( get_agent_jid( _CLIENT_NAME ), _CLIENT_PASSWORD, _BUDGET, _CLIENT_LOCATION )
 		await client_agent.start( auto_register = True )
+		log.info( "Agent added..." )
 
 		log.info( "Starting ui..." )
-		await terminal_ui(client_agent)
+		ui_task = asyncio.create_task( terminal_ui( client_agent ) )
+		await ui_task
 	except Exception as e:
 		log.critical( e )
-	
-	print( "Conversation until user interrupts with ctrl+C" )
-	while True:
-		try:
-			await wait_until_finished( client_agent )
-		except KeyboardInterrupt:
-			break
+	finally:
+		log.info( "Shutting down agent..." )
+		await client_agent.stop()
 
 if __name__ == "__main__":
 	spade.run( main() )
