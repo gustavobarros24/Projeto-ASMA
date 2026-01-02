@@ -76,6 +76,7 @@ exit                         Exit
 			await client.get_inventory(company_jid)
 			print(f"Requested inventory from {company_jid}")
 
+
 		elif cmd == "list":
 			if not client.available_items_cache:
 				print("Inventory cache is empty")
@@ -84,7 +85,7 @@ exit                         Exit
 			for item_id, item in client.available_items_cache.items():
 				print(
 					f"- {item_id}: {item.name} | "
-					f"price={item.price} | company={item.company_id}"
+					f"price={item.price_usd} | company={item.company_id}"
 				)
 
 		elif cmd == "buy" and len(parts) == 3:

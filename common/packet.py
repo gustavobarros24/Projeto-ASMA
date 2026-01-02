@@ -6,6 +6,7 @@ from typing import Dict, List
 from .package import Package
 from .geo_coord import *
 from .item import *
+from .drone_info import *
 
 
 """
@@ -31,48 +32,52 @@ class Packet:
 		return jsonpickle.decode( data )
 
 @dataclass
-class RequestDronesPacket( Packet ):
+class RequestDronePacket( Packet ):
 	company_budget: float
-	packages: Dict[str, Package]
+	package_weight: float
+	client_location: GeoCoord
 
-	def __init__( self, sender_id: str, company_budget: float, packages: Dict[str, Package] ):
+	def __init__( self, sender_id: str, company_budget: float, package_weight: float, client_location: GeoCoord ):
 		super().__init__( sender_id )
 		self.company_budget = company_budget
-		self.packages = packages
+		self.package_weight = package_weight
+		self.client_location = client_location
 
 @dataclass
-class ResponseDronesPacket( Packet ):
-	packages: List[str]
+class ResponseDronePacket( Packet ):
+	drone: Optional[DroneInfo]
 	cost: float
 
-	def __init__( self, sender_id: str, packages: List[str], cost: float ):
+	def __init__( self, sender_id: str, drone: Optional[DroneInfo], cost: float ):
 		super().__init__( sender_id )
-		self.packages = packages
+		self.drone = drone
 		self.cost = cost
 
 @dataclass
-class DeliveryPacket( Packet ):
-	order_id: str
-	item_id: str
+class PackageInfo( Packet ):
 	package: Package
 
-	def __init__( self, sender_id: str, order_id: str, item_id: str, package: Package ):
+	def __init__( self, sender_id: str, package: Package ):
 		super().__init__( sender_id )
-		self.order_id = order_id
-		self.item_id = item_id
+		self.package = package
+
+@dataclass
+class DeliveryPacket( Packet ):
+	package: Package
+
+	def __init__( self, sender_id: str, package: Package ):
+		super().__init__( sender_id )
 		self.package = package
 
 @dataclass
 class BuyItemPacket( Packet ):
 	order_id: str
 	item_id: str
-	payment: float
 	client_location: GeoCoord
 
-	def __init__( self, sender_id: str, order_id: int, item_id: str, payment: float, client_location: GeoCoord ):
+	def __init__( self, sender_id: str, order_id: str, item_id: str, client_location: GeoCoord ):
 		super().__init__( sender_id )
 		self.order_id = order_id
-		self.payment = payment
 		self.item_id = item_id
 		self.client_location = client_location
 

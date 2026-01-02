@@ -48,4 +48,4 @@ class ClientAgent( Agent ):
 	async def buy_item( self, seller_jid: str, item_id: str ):
 		log.info( f"Buying item: { item_id } from { seller_jid }..." )
 		item = self.available_items_cache[item_id]
-		self.add_behaviour( BuyerBehaviour( seller_jid, self.jid, item ) )
+		self.add_behaviour( BuyerBehaviour( seller_jid, item ) )

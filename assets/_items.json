@@ -1,7 +1,7 @@
 {
   "items": [
     {
-      "item_id": "WALMART_ITEM_001",
+      "id": "WALMART_ITEM_001",
       "company_id": "WALMART",
       "name": "Onn 43\" 4K Smart TV",
       "description": "Large screen smart TV for home entertainment",
@@ -9,7 +9,7 @@
       "weight_kg": 8.5
     },
     {
-      "item_id": "WALMART_ITEM_002",
+      "id": "WALMART_ITEM_002",
       "company_id": "WALMART",
       "name": "Great Value Whole Milk",
       "description": "Grocery — whole milk, 1 gallon",
@@ -17,7 +17,7 @@
       "weight_kg": 3.8
     },
     {
-      "item_id": "AMAZON_ITEM_001",
+      "id": "AMAZON_ITEM_001",
       "company_id": "AMAZON",
       "name": "TAGRY Bluetooth Headphones",
       "description": "True wireless Bluetooth headphones",
@@ -25,7 +25,7 @@
       "weight_kg": 0.25
     },
     {
-      "item_id": "AMAZON_ITEM_002",
+      "id": "AMAZON_ITEM_002",
       "company_id": "AMAZON",
       "name": "Mini Laptop 8 inch HD",
       "description": "Compact laptop for basic tasks",
@@ -33,7 +33,7 @@
       "weight_kg": 1.2
     },
     {
-      "item_id": "APPLE_ITEM_001",
+      "id": "APPLE_ITEM_001",
       "company_id": "APPLE",
       "name": "Apple AirPods Pro (2nd gen)",
       "description": "Premium noise cancelling earbuds",
@@ -41,7 +41,7 @@
       "weight_kg": 0.05
     },
     {
-      "item_id": "APPLE_ITEM_002",
+      "id": "APPLE_ITEM_002",
       "company_id": "APPLE",
       "name": "iPad 10th Generation",
       "description": "Latest generation Apple tablet",
@@ -49,7 +49,7 @@
       "weight_kg": 0.6
     },
     {
-      "item_id": "IKEA_ITEM_001",
+      "id": "IKEA_ITEM_001",
       "company_id": "IKEA",
       "name": "LACK Coffee Table",
       "description": "Simple, lightweight coffee table",
@@ -57,7 +57,7 @@
       "weight_kg": 7.0
     },
     {
-      "item_id": "IKEA_ITEM_002",
+      "id": "IKEA_ITEM_002",
       "company_id": "IKEA",
       "name": "MALM Bed Frame",
       "description": "Queen size bed frame set",
@@ -65,7 +65,7 @@
       "weight_kg": 32.0
     },
     {
-      "item_id": "ALIBABA_ITEM_001",
+      "id": "ALIBABA_ITEM_001",
       "company_id": "ALIBABA",
       "name": "Wireless Earbuds (Bulk)",
       "description": "Bulk pack of wireless earbuds sourced via Alibaba",
@@ -73,7 +73,7 @@
       "weight_kg": 0.45
     },
     {
-      "item_id": "ALIBABA_ITEM_002",
+      "id": "ALIBABA_ITEM_002",
       "company_id": "ALIBABA",
       "name": "Portable Solar Garden Lights",
       "description": "Set of garden solar lights",
@@ -81,7 +81,7 @@
       "weight_kg": 1.1
     },
     {
-      "item_id": "NIKE_ITEM_001",
+      "id": "NIKE_ITEM_001",
       "company_id": "NIKE",
       "name": "Nike Air Max Shoes",
       "description": "Popular athletic sneakers",
@@ -89,7 +89,7 @@
       "weight_kg": 1.0
     },
     {
-      "item_id": "NIKE_ITEM_002",
+      "id": "NIKE_ITEM_002",
       "company_id": "NIKE",
       "name": "Nike Dri‑Fit Performance Tee",
       "description": "Lightweight athletic shirt",

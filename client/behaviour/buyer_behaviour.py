@@ -24,14 +24,14 @@ class BuyerBehaviour( OneShotBehaviour ):
 	def __init__( self, seller_id: str, item: Item ):
 		super().__init__()
 		self.item = item
-		self.sender_id = seller_id
+		self.seller_id = seller_id
 
 	async def run( self ):
-		log.info( f"Creating buy packet for: { self.agent.jid.node } for { self.seller_id }..." )
+		log.info( f"Creating buy packet for: { self.agent.jid.node } from { self.seller_id }..." )
 		order_id = generate_id()
-		packet = BuyItemPacket( self.agent.node, order_id, self.item.id, self.agent.location )
+		packet = BuyItemPacket( self.agent.jid.node, order_id, self.item.id, self.agent.location )
 		self.agent.pending_orders[order_id] = self.item.id
-		self.agent.budget -= self.item.price 
+		self.agent.budget -= self.item.price_usd
 
 		log.info( "Preparing message..." )
 		msg = new_message( packet, self.seller_id )
