@@ -3,7 +3,10 @@ from spade.agent import Agent
 from utils.logger import get_logger
 from common.drone_info import DroneInfo
 from .behaviour.receiver_behaviour import ReceiverBehaviour
+from config.config import *
 
+
+log = get_logger( name = CENTRAL_ID, log_dir = "logs", console = True )
 
 class CentralAgent(Agent):
     drones: List[DroneInfo]
@@ -12,12 +15,6 @@ class CentralAgent(Agent):
         super().__init__(jid, password)
         self.drones = []
         self._load_drones(drones_data)
-
-        self.log = get_logger(
-            name="central",
-            log_dir="logs",
-            console=True
-        )
 
     def _load_drones(self, drones_data:List[Dict]):
         for d in drones_data:
@@ -32,7 +29,7 @@ class CentralAgent(Agent):
             self.drones.append(drone)
 
     async def setup(self):
-        self.log.info(f"Central agent started: {self.jid.node}")
-        self.log.info(f"Managing {len(self.drones)} drones.")
+        log.info(f"Central agent started: {self.jid.node}")
+        log.info(f"Managing {len(self.drones)} drones.")
 
         self.add_behaviour(ReceiverBehaviour())

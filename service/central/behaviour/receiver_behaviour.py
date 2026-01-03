@@ -1,3 +1,5 @@
+import logging
+
 from spade.behaviour import CyclicBehaviour
 from common.packet import Packet, RequestDronePacket, ResponseDronePacket
 from common.drone_info import DroneInfo
@@ -7,10 +9,10 @@ from typing import Optional
 _PRICE_PER_KM = 0.50
 _BASE_FEE = 3.0
 
+log = logging.getLogger( __name__ )
 
 class ReceiverBehaviour(CyclicBehaviour):
     async def run(self):
-        log = self.agent.log
         msg = await self.receive(timeout=1)
 
         if not msg:

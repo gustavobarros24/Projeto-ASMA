@@ -10,31 +10,30 @@ from logging import Logger
 ===============================================================================
 """
 
-def get_logger(name: str, log_dir: str = ".", log_filename: str = None, console: bool = False) -> Logger:
-    os.makedirs(log_dir, exist_ok=True)
+def get_logger( name: str, log_dir: str = ".", log_filename: str = None, console: bool = False ) -> Logger:
+	os.makedirs( log_dir, exist_ok = True )
 
-    if log_filename is None:
-        log_filename = f"{name}.log"
+	if log_filename is None:
+		log_filename = f"{ name }.log"
 
-    log_path = os.path.join(log_dir, log_filename)
+	log_path = os.path.join( log_dir, log_filename )
 
-    logger = logging.getLogger(name)
+	logger = logging.getLogger( name )
+	logger.setLevel( logging.DEBUG )
+	logger.propagate = False # Yh duvido que isto seja solução para os logs fdds...
 
-    logger.setLevel(logging.DEBUG)
-    logger.propagate = False
+	if not logger.handlers:
+		formatter = logging.Formatter(
+			'%(asctime)s [%(name)s] %(levelname)s: %(message)s'
+		)
 
-    if logger.hasHandlers():
-        logger.handlers.clear()
+		file_handler = logging.FileHandler( log_path, mode = 'w' )
+		file_handler.setFormatter( formatter )
+		logger.addHandler( file_handler )
 
-    formatter = logging.Formatter('%(asctime)s [%(name)s] %(levelname)s: %(message)s')
+		if console:
+			console_handler = logging.StreamHandler()
+			console_handler.setFormatter( formatter )
+			logger.addHandler( console_handler )
 
-    file_handler = logging.FileHandler(log_path, mode='w')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-
-    if console:
-        console_handler = logging.StreamHandler()
-        console_handler.setFormatter(formatter)
-        logger.addHandler(console_handler)
-
-    return logger
+	return logger

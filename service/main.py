@@ -19,7 +19,6 @@ from common.geo_coord import GeoCoord
 ===============================================================================
 """
 
-_CENTRAL_NAME = "central"
 _DEFAULT_PASSWORD = "123"
 
 log = get_logger( name = "startup", log_dir = "logs", console = True )
@@ -50,7 +49,7 @@ def _load_drones():
 	]
 
 async def main():
-	log.info( f"Starting { _CENTRAL_NAME }..." )
+	log.info( f"Starting { CENTRAL_ID }..." )
 
 	companies = _load_companies()
 	log.info( f"Loaded companies: { companies }..." )
@@ -59,10 +58,8 @@ async def main():
 	log.info( f"Loaded drones: { drones }...")
 
 	try:
-		# to be completed...
-		log.info("Starting central...")
-		central_agent = CentralAgent(get_agent_jid(_CENTRAL_NAME),_DEFAULT_PASSWORD,drones)
-		await central_agent.start(auto_register=True)
+		central_agent = CentralAgent( get_agent_jid( CENTRAL_ID ), _DEFAULT_PASSWORD, drones )
+		await central_agent.start( auto_register = True )
 
 		log.info( "Starting companies..." )
 		company_agents = []

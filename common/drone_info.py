@@ -42,11 +42,11 @@ class DroneInfo:
 		if self.battery_percent >= self.battery_needed_percent( package ):
 			return True
 		else:
-			print(f"Drone {self.id} reject: battery {self.battery_percent}% < needed {self.battery_needed_percent( package ):.2f}%")
+			print( f"Drone { self.id } reject: battery { self.battery_percent }% < needed {self.battery_needed_percent( package ):.2f}%" )
 			return False
 
-	def battery_needed_percent(self, package: Package) -> float:
-		distance = (self.current_position.distance_to(package.location)) / 1000.0
+	def battery_needed_percent( self, package: Package ) -> float:
+		distance = self.current_position.distance_to( package.location )
 
 		per_km_cost = (
 				_BASE_CONSUMPTION_PER_KM

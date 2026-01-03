@@ -59,7 +59,7 @@ class GeoCoord:
 		a = sin( dlat / 2 )**2 + cos( lat1 ) * cos( lat2 ) * sin( dlon / 2 )**2
 		c = 2 * asin( sqrt( a ) )
 
-		return _WGS84_EARTH_RADIUS_M * c
+		return ( _WGS84_EARTH_RADIUS_M * c ) / 1000.0 # for km
 
 	def almost_equals( self, other: "GeoCoord", *, tol_deg: float = _TOLERANCE_LATLON_DEGREE, tol_alt_m: float = _TOLERANCE_ALT_M ) -> bool:
 		# use this function to compare, because of floating point precision issues

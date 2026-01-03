@@ -7,7 +7,6 @@ from common.package import *
 from common.geo_coord import *
 from utils.logger import *
 from utils.utils import *
-from .behaviour.sender_behaviour import *
 from .behaviour.receiver_behaviour import *
 from .behaviour.package_manager_behaviour import *
 from common.item import *

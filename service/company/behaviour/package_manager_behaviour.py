@@ -4,6 +4,7 @@ from utils.logger import *
 from utils.utils import *
 from common.packet import *
 from utils.communication import *
+from config.config import *
 
 """
 ===============================================================================
@@ -54,7 +55,7 @@ class PackageManagerBehaviour( PeriodicBehaviour ):
 			)
 
 			log.info( "Creating message..." )
-			msg = new_message( packet, "central" )
+			msg = new_message( packet, CENTRAL_ID )
 			await self.send( msg )
 
 			log.info( "Make a request for new drone to send package..." )
