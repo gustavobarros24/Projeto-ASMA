@@ -8,6 +8,7 @@ from central.central_agent import *
 from company.company_agent import *
 from drone.drone_agent import *
 from config.config import *
+from common.geo_coord import GeoCoord
 
 
 """
@@ -30,7 +31,8 @@ def _load_companies():
 		{
 			"jid": get_agent_jid( c["id"] ),
 			"password": _DEFAULT_PASSWORD,
-			"annual_revenue_usd": c["annual_revenue_usd"]
+			"annual_revenue_usd": c["annual_revenue_usd"],
+			"location": GeoCoord(c["location"]["lat"], c["location"]["lon"])
 		}
 		for c in data["companies"]
 	]
@@ -58,14 +60,19 @@ async def main():
 
 	try:
 		# to be completed...
-		# log.info( "Starting central..." )
-		# central_agent = CentralAgent( get_agent_jid( _CENTRAL_NAME ), _DEFAULT_PASSWORD )
-		# await central_agent.start( auto_register = True )
+		log.info("Starting central...")
+		central_agent = CentralAgent(get_agent_jid(_CENTRAL_NAME),_DEFAULT_PASSWORD,drones)
+		await central_agent.start(auto_register=True)
 
 		log.info( "Starting companies..." )
 		company_agents = []
 		for company in companies:
-			agent = CompanyAgent( company["jid"], company["password"], company["annual_revenue_usd"] )
+			agent = CompanyAgent(
+				company["jid"],
+				company["password"],
+				company["annual_revenue_usd"],
+				company["location"]
+			)
 			company_agents.append( agent )
 			await agent.start( auto_register = True )
 

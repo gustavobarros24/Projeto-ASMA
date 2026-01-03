@@ -6,7 +6,11 @@
       "industry": "Retail",
       "headquarters": "United States",
       "annual_revenue_usd": 680000000000,
-      "url": "https://www.walmart.com"
+      "url": "https://www.walmart.com",
+      "location": {
+        "lat": 41.880000,
+        "lon": -87.630000
+      }
     },
     {
       "id": "AMAZON",
@@ -14,7 +18,11 @@
       "industry": "E‑Commerce & Cloud",
       "headquarters": "United States",
       "annual_revenue_usd": 638000000000,
-      "url": "https://www.amazon.com"
+      "url": "https://www.amazon.com",
+      "location": {
+        "lat": 41.890000,
+        "lon": -87.610000
+      }
     },
     {
       "id": "APPLE",
@@ -22,7 +30,11 @@
       "industry": "Technology",
       "headquarters": "United States",
       "annual_revenue_usd": 394000000000,
-      "url": "https://www.apple.com"
+      "url": "https://www.apple.com",
+      "location": {
+        "lat": 41.895000,
+        "lon": -87.625000
+      }
     },
     {
       "id": "IKEA",
@@ -30,7 +42,11 @@
       "industry": "Retail (Furniture & Home Goods)",
       "headquarters": "Netherlands / Sweden",
       "annual_revenue_usd": 45100000000,
-      "url": "https://www.ikea.com"
+      "url": "https://www.ikea.com",
+      "location": {
+        "lat": 41.900000,
+        "lon": -87.640000
+      }
     },
     {
       "id": "ALIBABA",
@@ -38,7 +54,11 @@
       "industry": "E‑Commerce & Technology",
       "headquarters": "China",
       "annual_revenue_usd": 109000000000,
-      "url": "https://www.alibaba.com"
+      "url": "https://www.alibaba.com",
+      "location": {
+        "lat": 41.870000,
+        "lon": -87.620000
+      }
     },
     {
       "id": "NIKE",
@@ -46,8 +66,11 @@
       "industry": "Apparel & Footwear",
       "headquarters": "United States",
       "annual_revenue_usd": 51000000000,
-      "url": "https://www.nike.com"
+      "url": "https://www.nike.com",
+      "location": {
+        "lat": 41.885000,
+        "lon": -87.615000
+      }
     }
   ]
 }
-

@@ -38,17 +38,23 @@ class PackageManagerBehaviour( PeriodicBehaviour ):
 				msg = new_message( packet, drone.id )
 				await self.send( msg )
 				sent = True
-				log.info( f"Drone: { drone.id } will send package: { package.order_id }..." )
+				log.info( f"Drone { drone.id } will send package: { package.order_id }..." )
 				break
 
 		if not sent:
 			log.info( "Package not sent..." )
 
 			log.info( "Creating request drone packet..." )
-			packet = RequestDronePacket( self.agent.jid.node, self.agent.budget, package.item.weight_kg, package.location )
+			packet = RequestDronePacket(
+				sender_id=self.agent.jid.node,
+				company_budget=self.agent.budget,
+				package_weight=package.item.weight_kg,
+				client_location=package.location,
+				pickup_location=self.agent.location
+			)
 
 			log.info( "Creating message..." )
-			msg = new_message( packet, ... ) # will need central id
+			msg = new_message( packet, "central" )
 			await self.send( msg )
 
 			log.info( "Make a request for new drone to send package..." )

@@ -11,8 +11,8 @@ from .package import *
 ===============================================================================
 """
 
-_CENTRAL_LAT = -87.626396
-_CENTRAL_LON = 41.888866
+_CENTRAL_LAT = 41.888866
+_CENTRAL_LON = -87.626396
 
 _BASE_CONSUMPTION_PER_KM = 1.0      # % battery per km (empty drone)
 _WEIGHT_FACTOR_PER_KG = 0.3         # extra % per km per kg
@@ -42,14 +42,15 @@ class DroneInfo:
 		if self.battery_percent >= self.battery_needed_percent( package ):
 			return True
 		else:
-			False
+			return False
 
-	def battery_needed_percent( self, package: Package ) -> float:
-		distance_km = self.current_position.distance_to( package.location )
+	def battery_needed_percent(self, package: Package) -> float:
+		distance = (self.current_position.distance_to(package.location)) / 1000.0
+
 		per_km_cost = (
-			_BASE_CONSUMPTION_PER_KM
-			+ package.item.weight_kg * _WEIGHT_FACTOR_PER_KG
-			+ self.speed_kmh * _SPEED_FACTOR_PER_KMH
+				_BASE_CONSUMPTION_PER_KM
+				+ package.item.weight_kg * _WEIGHT_FACTOR_PER_KG
+				+ self.speed_kmh * _SPEED_FACTOR_PER_KMH
 		)
 
-		return distance_km * per_km_cost + _SAFETY_MARGIN
+		return distance * per_km_cost + _SAFETY_MARGIN

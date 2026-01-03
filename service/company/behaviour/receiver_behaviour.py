@@ -27,7 +27,7 @@ class ReceiverBehaviour( CyclicBehaviour ):
 		try:
 			packet = Packet.deserialize( msg.body )
 		except Exception:
-			log.warning( "Failed to deserialize packet" )
+			log.warning("Failed to deserialize packet")
 			return
 
 		if isinstance( packet, FetchInventoryPacket ):
@@ -64,16 +64,19 @@ class ReceiverBehaviour( CyclicBehaviour ):
 			package = Package( packet.order_id, sender_id, packet.client_location,  item )
 
 			log.info( "Putting in queue, to be eventually sent..." )
-			await self.queue.put( package )
+			await self.agent.packages_to_send.put( package )
 		else:
 			log.info( f"Item { item_id } doesn't exist in this company..." )
 
-	async def handle_response_drone( self, packet: ResponseDronePacket ):
+	async def handle_response_drone(self, packet: ResponseDronePacket):
 		log = self.agent.log
 
 		if packet.drone:
-			log.info( f"Renting new drone: { packet.drone.id } costing { packet.cost }..." )
-			self.agent.rented_drones.append( packet.drone )
-			self.agent.budget -= packet.cost 
+			log.info(f"Renting new drone: {packet.drone.id} costing {packet.cost}...")
+
+			packet.drone.available = True
+
+			self.agent.rented_drones.append(packet.drone)
+			self.agent.budget -= packet.cost
 		else:
-			log.info( "No available drone..." )
+			log.info("No available drone...")

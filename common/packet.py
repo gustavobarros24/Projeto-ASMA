@@ -36,12 +36,14 @@ class RequestDronePacket( Packet ):
 	company_budget: float
 	package_weight: float
 	client_location: GeoCoord
+	pickup_location: GeoCoord
 
-	def __init__( self, sender_id: str, company_budget: float, package_weight: float, client_location: GeoCoord ):
+	def __init__( self, sender_id: str, company_budget: float, package_weight: float, client_location: GeoCoord, pickup_location: GeoCoord ):
 		super().__init__( sender_id )
 		self.company_budget = company_budget
 		self.package_weight = package_weight
 		self.client_location = client_location
+		self.pickup_location = pickup_location
 
 @dataclass
 class ResponseDronePacket( Packet ):

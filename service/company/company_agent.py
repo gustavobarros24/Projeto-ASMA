@@ -29,10 +29,12 @@ class CompanyAgent( Agent ):
 	packages_to_send: Queue[Package]
 	rented_drones: List[DroneInfo]
 	budget: float
+	location: GeoCoord
 
-	def __init__( self, _id: str, _password: str, _budget: float ):
+	def __init__( self, _id: str, _password: str, _budget: float, _location: GeoCoord ):
 		super().__init__( _id, _password )
 		self.budget = _budget
+		self.location = _location
 		self.inventory = self._load_inventory( self.jid.node )
 		self.packages_to_send = Queue()
 		self.rented_drones = []
