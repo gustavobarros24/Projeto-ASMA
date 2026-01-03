@@ -39,6 +39,7 @@ class ReceiverBehaviour(CyclicBehaviour):
                 continue
 
             if drone.capacity_kg < packet.package_weight:
+                log.debug(f"Drone {drone.id} skipped: insufficient capacity ({drone.capacity_kg} < {packet.package_weight})")
                 continue
 
             dist_to_pickup = drone.current_position.distance_to(packet.pickup_location)
@@ -48,6 +49,7 @@ class ReceiverBehaviour(CyclicBehaviour):
             estimated_cost = _BASE_FEE + (total_distance * _PRICE_PER_KM)
 
             if estimated_cost > packet.company_budget:
+                log.debug(f"Drone {drone.id} skipped: over budget ({estimated_cost:.2f} > {packet.company_budget})")
                 continue
 
             if estimated_cost < min_cost:
@@ -65,3 +67,4 @@ class ReceiverBehaviour(CyclicBehaviour):
         response = ResponseDronePacket(self.agent.jid.node, best_drone, cost)
         msg = new_message(response, packet.sender_id)
         await self.send(msg)
+        log.info(f"Response sent to {packet.sender_id} with drone assigned: {best_drone.id if best_drone else 'None'}")

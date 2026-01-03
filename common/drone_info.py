@@ -42,6 +42,7 @@ class DroneInfo:
 		if self.battery_percent >= self.battery_needed_percent( package ):
 			return True
 		else:
+			print(f"Drone {self.id} reject: battery {self.battery_percent}% < needed {self.battery_needed_percent( package ):.2f}%")
 			return False
 
 	def battery_needed_percent(self, package: Package) -> float:
