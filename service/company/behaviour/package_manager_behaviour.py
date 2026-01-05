@@ -15,9 +15,13 @@ from config.config import *
 ===============================================================================
 """
 
-class PackageManagerBehaviour( PeriodicBehaviour ):
+class PackageManagerBehaviour( PeriodicBehaviour ):    
+	def __init__( self, period: int, *, log = None ):
+		super().__init__( period = period )
+		self.log = log
+
 	async def run( self ):
-		log = self.agent.log
+		log = self.log
 
 		queue = self.agent.packages_to_send
 		try:

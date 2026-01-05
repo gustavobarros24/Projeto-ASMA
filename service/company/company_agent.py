@@ -57,5 +57,5 @@ class CompanyAgent( Agent ):
 
 	async def setup( self ):
 		self.log.info( f"Company agent started: { self.jid.node }..." )
-		self.add_behaviour( ReceiverBehaviour() )
-		self.add_behaviour( PackageManagerBehaviour( period = _MANAGER_TIMEOUT ) )
+		self.add_behaviour( ReceiverBehaviour( log = self.log ) )
+		self.add_behaviour( PackageManagerBehaviour( _MANAGER_TIMEOUT, log = self.log ) )

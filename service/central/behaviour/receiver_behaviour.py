@@ -31,8 +31,6 @@ class ReceiverBehaviour(CyclicBehaviour):
             log.info(f"Received unexpected packet: {type(packet)}")
 
     async def handle_drone_request(self, packet: RequestDronePacket):
-        log = self.agent.log
-
         best_drone: Optional[DroneInfo] = None
         min_cost = float('inf')
 

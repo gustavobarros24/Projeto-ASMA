@@ -5,7 +5,7 @@ import json
 from utils.logger import * 
 from utils.utils import *
 from central.central_agent import *
-from company.company_agent import *
+from service.company.company_agent import *
 from drone.drone_agent import *
 from config.config import *
 from common.geo_coord import GeoCoord
@@ -68,7 +68,7 @@ async def main():
 				company["jid"],
 				company["password"],
 				company["annual_revenue_usd"],
-				company["location"]
+				company["location"],
 			)
 			company_agents.append( agent )
 			await agent.start( auto_register = True )
@@ -92,7 +92,7 @@ async def main():
 	except KeyboardInterrupt:
 		log.info( "Shutting down all agents..." )
 	finally:
-		#await central_agent.stop()
+		await central_agent.stop()
 		for agent in company_agents: #+ drone_agents:
 			await agent.stop()
 		log.info( "Shutdown complete..." )

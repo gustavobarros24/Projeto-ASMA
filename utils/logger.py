@@ -20,7 +20,7 @@ def get_logger( name: str, log_dir: str = ".", log_filename: str = None, console
 
 	logger = logging.getLogger( name )
 	logger.setLevel( logging.DEBUG )
-	logger.propagate = False # Yh duvido que isto seja solução para os logs fdds...
+	logger.propagate = True
 
 	if not logger.handlers:
 		formatter = logging.Formatter(

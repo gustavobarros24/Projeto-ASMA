@@ -1,6 +1,6 @@
 import spade
 
-from client_agent import *
+from client.client_agent import *
 from config.config import *
 from common.geo_coord import *
 from ui import *
@@ -19,12 +19,12 @@ _CLIENT_LOCATION = GeoCoord.random_geocoord()
 #_CLIENT_LOCATION = GeoCoord( 41.90,-87.60 ) # para teste
 _BUDGET = 5000.00 
 
-log = get_logger( name = _CLIENT_NAME, log_dir = "logs", console = False )
+log = get_logger( name = f"client.{ _CLIENT_NAME }", log_dir = "logs", console = False )
 
 async def main():
 	log.info( f"Starting { _CLIENT_NAME }..." )
 	try:
-		client_agent = ClientAgent( get_agent_jid( _CLIENT_NAME ), _CLIENT_PASSWORD, _BUDGET, _CLIENT_LOCATION )
+		client_agent = ClientAgent( get_agent_jid( _CLIENT_NAME ), _CLIENT_PASSWORD, _BUDGET, _CLIENT_LOCATION, log = log )
 		await client_agent.start( auto_register = True )
 		log.info( "Agent added..." )
 

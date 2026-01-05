@@ -15,9 +15,15 @@ from utils.communication import *
 
 _TIMEOUT = 1 # second
 
+#log = logging.getLogger( __name__ )
+
 class ReceiverBehaviour( CyclicBehaviour ):
+	def __init__( self, *, log = None):
+		super().__init__()
+		self.log = log
+
 	async def run( self ):
-		log = self.agent.log
+		log = self.log
 
 		msg = await self.receive( timeout = _TIMEOUT )
 		if not msg:
@@ -43,7 +49,7 @@ class ReceiverBehaviour( CyclicBehaviour ):
 			log.warning( f"Received unexpected packet: { packet }..." )
 
 	async def handle_fetch( self, packet: FetchInventoryPacket ):
-		log = self.agent.log
+		log = self.log
 
 		inventory_packet = InventoryPacket( self.agent.jid.node, self.agent.inventory )
 		msg = new_message( inventory_packet, packet.sender_id )
@@ -51,7 +57,7 @@ class ReceiverBehaviour( CyclicBehaviour ):
 		log.info( f"Sent inventory to { packet.sender_id }...")
 
 	async def handle_buy( self, packet: BuyItemPacket ):
-		log = self.agent.log
+		log = self.log
 
 		inventory = self.agent.inventory
 		item_id = packet.item_id
@@ -69,7 +75,7 @@ class ReceiverBehaviour( CyclicBehaviour ):
 			log.info( f"Item { item_id } doesn't exist in this company..." )
 
 	async def handle_response_drone(self, packet: ResponseDronePacket):
-		log = self.agent.log
+		log = self.log
 
 		if packet.drone:
 			log.info(f"Renting new drone: {packet.drone.id} costing {packet.cost}...")

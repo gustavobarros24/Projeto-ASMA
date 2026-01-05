@@ -19,14 +19,17 @@ log = logging.getLogger( __name__ )
 class FetchBehaviour( OneShotBehaviour ):
 	company_id: str
 
-	def __init__( self, company_id: str ):
+	def __init__( self, company_id: str, *, log = None ):
 		super().__init__()
 		self.company_id = company_id
+		self.log = log
 
 	async def on_start( self ):
-		log.info( f"FetchBehaviour started for { self.company_id }..." )
+		self.log.info( f"FetchBehaviour started for { self.company_id }..." )
 
 	async def run( self ):
+		log = self.log
+
 		log.info( f"Creating fetch packet for: { self.agent.jid.node }..." )
 		packet = FetchInventoryPacket( self.agent.jid.node )
 

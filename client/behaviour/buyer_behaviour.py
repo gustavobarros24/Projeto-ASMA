@@ -21,12 +21,15 @@ class BuyerBehaviour( OneShotBehaviour ):
 	seller_id: str
 	item: Item
 
-	def __init__( self, seller_id: str, item: Item ):
+	def __init__( self, seller_id: str, item: Item, *, log ):
 		super().__init__()
 		self.item = item
 		self.seller_id = seller_id
+		self.log = log
 
 	async def run( self ):
+		log = self.log
+    
 		log.info( f"Creating buy packet for: { self.agent.jid.node } from { self.seller_id }..." )
 		order_id = generate_id()
 		packet = BuyItemPacket( self.agent.jid.node, order_id, self.item.id, self.agent.location )

@@ -2,7 +2,7 @@ import json
 import asyncio
 
 from typing import Dict
-from client_agent import *
+from client.client_agent import *
 from utils.logger import *
 from utils.utils import *
 
