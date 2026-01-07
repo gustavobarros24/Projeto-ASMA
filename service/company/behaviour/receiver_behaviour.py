@@ -14,6 +14,8 @@ from utils.communication import *
 """
 
 _TIMEOUT = 1 # second
+_LENDING_FEE_PER_KM = 0.20  # fee per km for lending drone
+_BASE_LENDING_FEE = 2.0     # base fee for lending
 
 #log = logging.getLogger( __name__ )
 
@@ -21,6 +23,8 @@ class ReceiverBehaviour( CyclicBehaviour ):
 	def __init__( self, *, log = None):
 		super().__init__()
 		self.log = log
+		# Track drones lent to other companies: {drone_id: {"lender": company_id, "drone": DroneInfo}}
+		self.borrowed_drones = {}
 
 	async def run( self ):
 		log = self.log
@@ -45,6 +49,18 @@ class ReceiverBehaviour( CyclicBehaviour ):
 		elif isinstance( packet, ResponseDronePacket ):
 			log.info( f"Received response drone from { packet.sender_id }..." )
 			await self.handle_response_drone( packet )
+		elif isinstance( packet, RequestDroneLendPacket ):
+			log.info( f"Received drone lend request from { packet.sender_id } for { packet.requester_company_id }..." )
+			await self.handle_drone_lend_request( packet )
+		elif isinstance( packet, ConfirmDroneLendPacket ):
+			log.info( f"Received drone lend confirmation from { packet.sender_id }..." )
+			await self.handle_drone_lend_confirm( packet )
+		elif isinstance( packet, DroneLentPacket ):
+			log.info( f"Received lent drone notification from { packet.sender_id }..." )
+			await self.handle_drone_lent( packet )
+		elif isinstance( packet, DroneReturnedPacket ):
+			log.info( f"Received drone returned notification from { packet.sender_id }..." )
+			await self.handle_drone_returned( packet )
 		else:
 			log.warning( f"Received unexpected packet: { packet }..." )
 
@@ -86,3 +102,137 @@ class ReceiverBehaviour( CyclicBehaviour ):
 			self.agent.budget -= packet.cost
 		else:
 			log.info("No available drone...")
+
+	async def handle_drone_lend_request(self, packet: RequestDroneLendPacket):
+		"""Handle request from central to lend a drone to another company."""
+		log = self.log
+
+		# Don't lend to ourselves
+		if packet.requester_company_id.upper() == self.agent.jid.node.upper():
+			log.info("Ignoring lend request for ourselves")
+			return
+
+		# Find an available drone that can handle the package
+		available_drone = None
+		for drone in self.agent.rented_drones:
+			if drone.available and drone.capacity_kg >= packet.package_weight:
+				available_drone = drone
+				break
+
+		if available_drone:
+			# Calculate lending cost based on distance
+			dist_to_pickup = available_drone.current_position.distance_to(packet.pickup_location)
+			dist_delivery = packet.pickup_location.distance_to(packet.client_location)
+			total_distance = dist_to_pickup + dist_delivery
+			lending_cost = _BASE_LENDING_FEE + (total_distance * _LENDING_FEE_PER_KM)
+
+			log.info(f"Offering drone {available_drone.id} for lending (cost: {lending_cost:.2f})")
+			
+			response = ResponseDroneLendPacket(
+				sender_id=self.agent.jid.node,
+				request_id=packet.request_id,
+				has_drone=True,
+				drone=available_drone,
+				lending_cost=lending_cost
+			)
+		else:
+			log.info("No available drone to lend")
+			response = ResponseDroneLendPacket(
+				sender_id=self.agent.jid.node,
+				request_id=packet.request_id,
+				has_drone=False,
+				drone=None,
+				lending_cost=0.0
+			)
+
+		msg = new_message(response, packet.sender_id)
+		await self.send(msg)
+		log.info(f"Sent lend response to {packet.sender_id}")
+
+	async def handle_drone_lend_confirm(self, packet: ConfirmDroneLendPacket):
+		"""Handle confirmation from central about drone lending."""
+		log = self.log
+
+		if packet.accepted:
+			# Find and mark the drone as unavailable (being lent)
+			for drone in self.agent.rented_drones:
+				if drone.id == packet.drone_id:
+					drone.available = False
+					log.info(f"Drone {drone.id} is now being lent to {packet.requester_company_id}")
+					
+					# Track that we lent this drone
+					if not hasattr(self.agent, 'lent_drones'):
+						self.agent.lent_drones = {}
+					self.agent.lent_drones[drone.id] = {
+						'borrower': packet.requester_company_id,
+						'request_id': packet.request_id
+					}
+					break
+		else:
+			log.info(f"Drone {packet.drone_id} lending was not accepted")
+
+	async def handle_drone_lent(self, packet: DroneLentPacket):
+		"""Handle notification that we received a lent drone from another company."""
+		log = self.log
+
+		log.info(f"Received lent drone {packet.drone.id} from {packet.lender_company_id} (cost: {packet.lending_cost:.2f})")
+		
+		# Add the lent drone to our available drones temporarily
+		packet.drone.available = True
+		self.agent.rented_drones.append(packet.drone)
+		self.agent.budget -= packet.lending_cost
+
+		# Track this as a borrowed drone so we can return it later
+		self.borrowed_drones[packet.drone.id] = {
+			'lender': packet.lender_company_id,
+			'drone': packet.drone,
+			'request_id': packet.request_id
+		}
+
+		log.info(f"Drone {packet.drone.id} added to available drones (borrowed from {packet.lender_company_id})")
+
+	async def handle_drone_returned(self, packet: DroneReturnedPacket):
+		"""Handle notification that our lent drone has been returned."""
+		log = self.log
+
+		log.info(f"Drone {packet.drone_id} has been returned")
+
+		# Find the drone and mark it as available again
+		for drone in self.agent.rented_drones:
+			if drone.id == packet.drone_id:
+				drone.available = True
+				log.info(f"Drone {drone.id} is now available again")
+				break
+
+		# Remove from lent drones tracking
+		if hasattr(self.agent, 'lent_drones') and packet.drone_id in self.agent.lent_drones:
+			del self.agent.lent_drones[packet.drone_id]
+
+	async def return_borrowed_drone(self, drone_id: str):
+		"""Return a borrowed drone to its lender after delivery is complete."""
+		log = self.log
+
+		if drone_id not in self.borrowed_drones:
+			log.warning(f"Drone {drone_id} not found in borrowed drones")
+			return
+
+		borrowed_info = self.borrowed_drones[drone_id]
+		lender_id = borrowed_info['lender']
+
+		log.info(f"Returning drone {drone_id} to {lender_id}")
+
+		# Remove drone from our list
+		self.agent.rented_drones = [d for d in self.agent.rented_drones if d.id != drone_id]
+
+		# Send return notification to central
+		return_packet = ReturnDronePacket(
+			sender_id=self.agent.jid.node,
+			drone_id=drone_id,
+			lender_company_id=lender_id
+		)
+		msg = new_message(return_packet, CENTRAL_ID)
+		await self.send(msg)
+
+		# Clean up tracking
+		del self.borrowed_drones[drone_id]
+		log.info(f"Drone {drone_id} returned to {lender_id}")

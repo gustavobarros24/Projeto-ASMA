@@ -1,7 +1,10 @@
 import spade
 import asyncio
 import json
-
+import sys
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(current_dir))
 from utils.logger import * 
 from utils.utils import *
 from central.central_agent import *
@@ -57,8 +60,12 @@ async def main():
 	drones = _load_drones()
 	log.info( f"Loaded drones: { drones }...")
 
+	# Extract company IDs for central agent
+	company_ids = [c["jid"].split("@")[0] for c in companies]
+	log.info( f"Company IDs: { company_ids }..." )
+
 	try:
-		central_agent = CentralAgent( get_agent_jid( CENTRAL_ID ), _DEFAULT_PASSWORD, drones )
+		central_agent = CentralAgent( get_agent_jid( CENTRAL_ID ), _DEFAULT_PASSWORD, drones, company_ids )
 		await central_agent.start( auto_register = True )
 
 		log.info( "Starting companies..." )
