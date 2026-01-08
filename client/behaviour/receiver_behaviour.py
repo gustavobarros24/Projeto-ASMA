@@ -36,7 +36,7 @@ class ReceiverBehaviour( CyclicBehaviour ):
 		if isinstance( packet, DeliveryPacket ):
 			log.info( "Received a delivery packet..." )
 			self.handle_delivery( packet )
-		if isinstance( packet, InventoryPacket ):
+		elif isinstance( packet, InventoryPacket ):
 			log.info( "Received a inventory packet..." )
 			self.handle_inventory( packet )
 		else:
@@ -45,15 +45,25 @@ class ReceiverBehaviour( CyclicBehaviour ):
 	def handle_delivery( self, packet: DeliveryPacket ):
 		log = self.log
 
-		order_id = packet.order_id
-		item_id = packet.item_id
-		if self.agent.pending_orders[order_id] == item_id:
-			log.info( f"Receive packet for order: { order_id } with item: { item_id }..." )
-			package = self.agent.pending_orders.pop( order_id, None )
-			self.agent.inventory[package.company_id].append( package.order_id )
-			log.info( f"Item received: { package }..." )
+		received_package = packet.package
+		item = received_package.item
+
+		order_id = received_package.order_id
+		item_id = item.id
+		company_id = item.company_id
+
+		expected_item_id = self.agent.pending_orders.get(order_id)
+
+		if expected_item_id == item_id:
+			log.info(f"Receive packet for order {order_id} with item {item_id}...")
+
+			self.agent.pending_orders.pop(order_id, None)
+
+			self.agent.inventory[company_id][item_id] = item
+
+			log.info(f"Item received and stored: {item.name}...")
 		else:
-			log.warning( f"Didn't ask for this: { item_id }..." )
+			log.warning(f"Didn't ask for this: {item_id} (expected: {expected_item_id})...")
 
 	def handle_inventory( self, packet: InventoryPacket ):
 		log = self.log

@@ -61,6 +61,12 @@ class ReceiverBehaviour( CyclicBehaviour ):
 		elif isinstance( packet, DroneReturnedPacket ):
 			log.info( f"Received drone returned notification from { packet.sender_id }..." )
 			await self.handle_drone_returned( packet )
+		elif isinstance(packet, DroneStatusPacket):
+			log.info(f"Received status update from drone {packet.sender_id}...")
+			await self.handle_drone_release(packet)
+		elif isinstance(packet, RefuseJobPacket):
+			log.warning(f"Drone {packet.sender_id} refused job: {packet.reason}")
+			await self.handle_job_refusal(packet)
 		else:
 			log.warning( f"Received unexpected packet: { packet }..." )
 
@@ -236,3 +242,35 @@ class ReceiverBehaviour( CyclicBehaviour ):
 		# Clean up tracking
 		del self.borrowed_drones[drone_id]
 		log.info(f"Drone {drone_id} returned to {lender_id}")
+
+	async def handle_drone_release(self, packet: DroneStatusPacket):
+		log = self.log
+		updated_drone = packet.drone_info
+		drone_id = updated_drone.id
+
+		if drone_id in self.borrowed_drones:
+			log.info(f"Borrowed drone {drone_id} finished delivery: returning to lender...")
+			await self.return_borrowed_drone(drone_id)
+			return
+
+		is_rented = any(d.id == drone_id for d in self.agent.rented_drones)
+
+		if is_rented:
+			self.agent.rented_drones = [d for d in self.agent.rented_drones if d.id != drone_id]
+			log.info(f"Drone {drone_id} finished delivery!")
+		else:
+			log.debug(f"Received update from drone {drone_id} not currently rented: ignoring....")
+
+	async def handle_job_refusal(self, packet: RefuseJobPacket):
+		log = self.log
+		drone_id = packet.sender_id
+
+		log.warning(f"Drone {drone_id} refused job: {packet.reason}")
+
+		if drone_id in self.borrowed_drones:
+			await self.return_borrowed_drone(drone_id)
+
+		self.agent.rented_drones = [d for d in self.agent.rented_drones if d.id != drone_id]
+
+		log.info(f"Re-queueing package {packet.package.order_id}...")
+		await self.agent.packages_to_send.put(packet.package)

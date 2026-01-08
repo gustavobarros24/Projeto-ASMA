@@ -3,9 +3,9 @@ from spade.agent import Agent
 from common.package import *
 from common.geo_coord import *
 from utils.logger import *
-from behaviour.buyer_behaviour import *
-from behaviour.receiver_behaviour import *
-from behaviour.fetch_inventory_behaviour import *
+from client.behaviour.buyer_behaviour import *
+from client.behaviour.receiver_behaviour import *
+from client.behaviour.fetch_inventory_behaviour import *
 from collections import defaultdict
 
 """
@@ -44,6 +44,9 @@ class ClientAgent( Agent ):
 		self.available_items_cache.clear()
 
 	async def buy_item( self, seller_jid: str, item_id: str ):
+		if item_id not in self.available_items_cache:
+			self.log.warning(f"Item {item_id} not found in cache: ignoring purchase...")
+			return
 		self.log.info( f"Buying item: { item_id } from { seller_jid }..." )
 		item = self.available_items_cache[item_id]
 		self.add_behaviour( BuyerBehaviour( seller_jid, item, log = self.log ) )

@@ -46,22 +46,12 @@ class NegotiateBehaviour(CyclicBehaviour):
         self.response_queues: Dict[str, asyncio.Queue] = {}
 
     async def run(self):
-        """Process incoming responses from companies."""
-        msg = await self.receive(timeout=1)
-        
-        if not msg:
-            # Check for timed-out negotiations
-            await self._check_timeouts()
-            return
+        # esté run() não deve fazer receive de mensagens, pois pode entrar em conflito com o ReceiveBehaviour
+        # apenas o ReceiveBehaviour recebe mensagens da rede.
 
-        try:
-            packet = Packet.deserialize(msg.body)
-        except Exception as e:
-            log.warning(f"Failed to deserialize packet: {e}")
-            return
+        await self._check_timeouts()
 
-        if isinstance(packet, ResponseDroneLendPacket):
-            await self._handle_lend_response(packet)
+        await asyncio.sleep(1)
 
     async def start_negotiation(self, request: RequestDronePacket) -> Optional[DroneInfo]:
         """

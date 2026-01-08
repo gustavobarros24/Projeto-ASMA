@@ -29,6 +29,10 @@ class BuyerBehaviour( OneShotBehaviour ):
 
 	async def run( self ):
 		log = self.log
+
+		if self.agent.budget < self.item.price_usd:
+			log.error(f"Insufficient funds to buy item {self.item.id}. (cost: {self.item.price_usd}, budget: {self.agent.budget}")
+			return
     
 		log.info( f"Creating buy packet for: { self.agent.jid.node } from { self.seller_id }..." )
 		order_id = generate_id()

@@ -7,9 +7,9 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(current_dir))
 from utils.logger import * 
 from utils.utils import *
-from central.central_agent import *
+from service.central.central_agent import *
 from service.company.company_agent import *
-from drone.drone_agent import *
+from service.drone.drone_agent import *
 from config.config import *
 from common.geo_coord import GeoCoord
 
@@ -80,13 +80,12 @@ async def main():
 			company_agents.append( agent )
 			await agent.start( auto_register = True )
 
-		# to be completed...
-		# log.info( "Starting drones..." )
-		# drone_agents = []
-		# for drone in drones:
-		# 	agent = DroneAgent( drone["jid"], drone["password"], drone["info"] )
-		# 	drone_agents.append( agent )
-		# 	await agent.start( auto_register = True )
+		log.info("Starting drones...")
+		drone_agents = []
+		for drone in drones:
+			agent = DroneAgent(drone["jid"], drone["password"], drone["info"])
+			drone_agents.append(agent)
+			await agent.start(auto_register=True)
 
 	except Exception as e:
 		log.critical( e )
@@ -100,7 +99,9 @@ async def main():
 		log.info( "Shutting down all agents..." )
 	finally:
 		await central_agent.stop()
-		for agent in company_agents: #+ drone_agents:
+		for agent in company_agents:
+			await agent.stop()
+		for agent in drone_agents:
 			await agent.stop()
 		log.info( "Shutdown complete..." )
 

@@ -3,7 +3,7 @@ import spade
 from client.client_agent import *
 from config.config import *
 from common.geo_coord import *
-from ui import *
+from client.ui import *
 
 """
 ===============================================================================

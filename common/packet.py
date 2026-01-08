@@ -58,10 +58,12 @@ class ResponseDronePacket( Packet ):
 @dataclass
 class PackageInfo( Packet ):
 	package: Package
+	pickup_location: GeoCoord
 
-	def __init__( self, sender_id: str, package: Package ):
+	def __init__( self, sender_id: str, package: Package, pickup_location: GeoCoord ):
 		super().__init__( sender_id )
 		self.package = package
+		self.pickup_location = pickup_location
 
 @dataclass
 class DeliveryPacket( Packet ):
@@ -96,6 +98,24 @@ class InventoryPacket( Packet ):
 		super().__init__( sender_id )
 		self.inventory = inventory
 
+@dataclass
+class DroneStatusPacket(Packet):
+	drone_info: DroneInfo
+
+	def __init__(self, sender_id: str, drone_info: DroneInfo):
+		super().__init__(sender_id)
+		self.drone_info = drone_info
+
+@dataclass
+class RefuseJobPacket(Packet):
+	package: Package
+	reason: str
+
+	def __init__(self, sender_id: str, package: Package, reason: str):
+		super().__init__(sender_id)
+		self.package = package
+		self.reason = reason
+
 
 # ============================================================================
 # Drone Lending Negotiation Packets
@@ -110,7 +130,7 @@ class RequestDroneLendPacket( Packet ):
 	pickup_location: GeoCoord
 	requester_company_id: str
 
-	def __init__( self, sender_id: str, request_id: str, package_weight: float, 
+	def __init__( self, sender_id: str, request_id: str, package_weight: float,
 				  client_location: GeoCoord, pickup_location: GeoCoord, requester_company_id: str ):
 		super().__init__( sender_id )
 		self.request_id = request_id
@@ -128,7 +148,7 @@ class ResponseDroneLendPacket( Packet ):
 	drone: Optional[DroneInfo]
 	lending_cost: float
 
-	def __init__( self, sender_id: str, request_id: str, has_drone: bool, 
+	def __init__( self, sender_id: str, request_id: str, has_drone: bool,
 				  drone: Optional[DroneInfo] = None, lending_cost: float = 0.0 ):
 		super().__init__( sender_id )
 		self.request_id = request_id
@@ -145,7 +165,7 @@ class ConfirmDroneLendPacket( Packet ):
 	requester_company_id: str
 	accepted: bool
 
-	def __init__( self, sender_id: str, request_id: str, drone_id: str, 
+	def __init__( self, sender_id: str, request_id: str, drone_id: str,
 				  requester_company_id: str, accepted: bool ):
 		super().__init__( sender_id )
 		self.request_id = request_id
@@ -162,7 +182,7 @@ class DroneLentPacket( Packet ):
 	lender_company_id: str
 	lending_cost: float
 
-	def __init__( self, sender_id: str, request_id: str, drone: DroneInfo, 
+	def __init__( self, sender_id: str, request_id: str, drone: DroneInfo,
 				  lender_company_id: str, lending_cost: float ):
 		super().__init__( sender_id )
 		self.request_id = request_id

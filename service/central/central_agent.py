@@ -53,4 +53,4 @@ class CentralAgent(Agent):
             self.add_behaviour(self.negotiate_behaviour)
             log.info("Negotiate behaviour added for drone lending between companies")
 
-        self.add_behaviour(ReceiverBehaviour())
+        self.add_behaviour(ReceiverBehaviour(log))
