@@ -7,8 +7,9 @@ import os
 
 ===============================================================================
 """
+#DOMAIN = os.getenv( "USERDOMAIN" )
 
-DOMAIN = os.getenv( "USERDOMAIN" )
+DOMAIN = "localhost"
 CENTRAL_ID = "central"
 
 def get_agent_jid( name: str ) -> str:

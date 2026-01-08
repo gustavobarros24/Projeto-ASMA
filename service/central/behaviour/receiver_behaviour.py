@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Optional
 
@@ -90,18 +91,32 @@ class ReceiverBehaviour(CyclicBehaviour):
             # Use negotiate behaviour to find a drone from other companies
             negotiate_behaviour = self.agent.negotiate_behaviour
             if negotiate_behaviour:
-                lent_drone = await negotiate_behaviour.start_negotiation(packet)
-                if lent_drone:
-                    self.log.info(f"Drone {lent_drone.id} lent to {packet.sender_id} from another company")
-                    # The DroneLentPacket is already sent by negotiate_behaviour
-                    return
+                # Run negotiation in background task to not block message receiving
+                asyncio.create_task(self._run_negotiation(negotiate_behaviour, packet))
+            else:
+                # No negotiate behaviour, send immediate rejection
+                response = ResponseDronePacket(self.agent.jid.node, None, 0.0)
+                msg = new_message(response, packet.sender_id)
+                await self.send(msg)
+                self.log.info(f"Response sent to {packet.sender_id} with no drone assigned")
 
-            # If no drone found through negotiation, send response with no drone
-            self.log.warning(f"No drone available for {packet.sender_id} after negotiation.")
-            response = ResponseDronePacket(self.agent.jid.node, None, 0.0)
-            msg = new_message(response, packet.sender_id)
-            await self.send(msg)
-            self.log.info(f"Response sent to {packet.sender_id} with no drone assigned")
+    async def _run_negotiation(self, negotiate_behaviour, packet: RequestDronePacket):
+        """Run negotiation in background without blocking receiver."""
+        try:
+            lent_drone = await negotiate_behaviour.start_negotiation(packet)
+            if lent_drone:
+                self.log.info(f"Drone {lent_drone.id} lent to {packet.sender_id} from another company")
+                # The DroneLentPacket is already sent by negotiate_behaviour
+                return
+        except Exception as e:
+            self.log.error(f"Error during negotiation: {e}")
+        
+        # If no drone found through negotiation, send response with no drone
+        self.log.warning(f"No drone available for {packet.sender_id} after negotiation.")
+        response = ResponseDronePacket(self.agent.jid.node, None, 0.0)
+        msg = new_message(response, packet.sender_id)
+        await self.send(msg)
+        self.log.info(f"Response sent to {packet.sender_id} with no drone assigned")
 
     async def handle_lend_response(self, packet: ResponseDroneLendPacket):
         """Forward lend responses to the negotiate behaviour."""

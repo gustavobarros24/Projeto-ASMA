@@ -130,11 +130,14 @@ class NegotiateBehaviour(CyclicBehaviour):
                 break
 
             try:
-                response = await asyncio.wait_for(response_queue.get(), timeout=remaining)
+                # Use shorter timeout to allow other coroutines to run
+                response = await asyncio.wait_for(response_queue.get(), timeout=min(0.5, remaining))
                 responses.append(response)
                 log.info(f"Received response from {response.sender_id}: has_drone={response.has_drone}")
             except asyncio.TimeoutError:
-                break
+                # Short timeout expired, continue loop to check again
+                await asyncio.sleep(0)  # Yield to event loop
+                continue
 
         # Find best offer (drone available with lowest cost)
         best_offer: Optional[ResponseDroneLendPacket] = None

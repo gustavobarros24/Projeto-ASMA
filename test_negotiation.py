@@ -1,6 +1,7 @@
 import spade
 import asyncio
 import uuid
+import json
 
 from utils.logger import get_logger
 from config.config import *
@@ -14,294 +15,87 @@ from common.drone_info import DroneInfo
 from utils.communication import new_message
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour, OneShotBehaviour
+from service.central.central_agent import CentralAgent
+from service.company.company_agent import CompanyAgent
+from common.packet import DroneLentPacket
 
 log = get_logger(name="test_negotiation", log_dir="logs", console=True)
 
 _DEFAULT_PASSWORD = "123"
 _DELIVERY_TIME = 3  # seconds to simulate delivery
 
-# Company IDs to use in test
-TEST_COMPANIES = ["COMPANY_A", "COMPANY_B", "COMPANY_C"]
+# Paths to JSON files
+COMPANIES_PATH = "assets/companies.json"
+DRONES_PATH = "assets/_drones.json"
 
 
-class SimpleCentralAgent(Agent):
-    """Central simplificado para teste - SEM drones próprios (força negociação)."""
-    
-    def __init__(self, jid: str, password: str, companies: list):
-        super().__init__(jid, password)
-        self.companies = companies
-        self.drones = []  # Sem drones - força negociação
-    
-    async def setup(self):
-        log.info(f"[CENTRAL] Started with companies: {self.companies}")
-        log.info(f"[CENTRAL] No drones available - will negotiate with companies")
-        self.add_behaviour(CentralReceiverBehaviour(self.companies))
+def load_companies_from_json():
+    """Load companies from JSON file."""
+    with open(COMPANIES_PATH, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data["companies"][:3]  # Use first 3 companies for testing
 
 
-class CentralReceiverBehaviour(CyclicBehaviour):
-    def __init__(self, companies: list):
-        super().__init__()
-        self.companies = companies
-        self.pending_requests = {}  # request_id -> {original_packet, responses, requester}
-    
+def load_drones_from_json():
+    """Load drones from JSON file."""
+    with open(DRONES_PATH, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data["drones"]
+
+
+class DeliveryTriggerBehaviour(CyclicBehaviour):
+    """Monitors for borrowed drones and triggers delivery simulation."""
     async def run(self):
-        msg = await self.receive(timeout=1)
-        if not msg:
-            return
+        await asyncio.sleep(1)
         
-        try:
-            packet = Packet.deserialize(msg.body)
-        except Exception as e:
-            log.warning(f"[CENTRAL] Failed to deserialize: {e}")
-            return
-        
-        if isinstance(packet, RequestDronePacket):
-            log.info(f"[CENTRAL] Received drone request from {packet.sender_id}")
-            await self.start_negotiation(packet)
-        elif isinstance(packet, ResponseDroneLendPacket):
-            log.info(f"[CENTRAL] Received lend response from {packet.sender_id}: has_drone={packet.has_drone}")
-            await self.handle_lend_response(packet)
-        elif isinstance(packet, ReturnDronePacket):
-            log.info(f"[CENTRAL] Received drone return from {packet.sender_id}")
-            await self.handle_drone_return(packet)
-    
-    async def start_negotiation(self, packet: RequestDronePacket):
-        request_id = str(uuid.uuid4())[:8]
-        
-        # Get companies to ask (exclude requester)
-        companies_to_ask = [c for c in self.companies if c.upper() != packet.sender_id.upper()]
-        
-        log.info(f"[CENTRAL] Starting negotiation {request_id}")
-        log.info(f"[CENTRAL] Asking companies: {companies_to_ask}")
-        
-        self.pending_requests[request_id] = {
-            'original': packet,
-            'responses': [],
-            'expected': len(companies_to_ask)
-        }
-        
-        # Send request to all companies
-        lend_request = RequestDroneLendPacket(
-            sender_id=CENTRAL_ID,
-            request_id=request_id,
-            package_weight=packet.package_weight,
-            client_location=packet.client_location,
-            pickup_location=packet.pickup_location,
-            requester_company_id=packet.sender_id
-        )
-        
-        for company_id in companies_to_ask:
-            msg = new_message(lend_request, company_id)
-            await self.send(msg)
-            log.info(f"[CENTRAL] Sent lend request to {company_id}")
-    
-    async def handle_lend_response(self, packet: ResponseDroneLendPacket):
-        request_id = packet.request_id
-        
-        if request_id not in self.pending_requests:
-            log.warning(f"[CENTRAL] Unknown request_id: {request_id}")
-            return
-        
-        pending = self.pending_requests[request_id]
-        pending['responses'].append(packet)
-        
-        log.info(f"[CENTRAL] Got {len(pending['responses'])}/{pending['expected']} responses")
-        
-        # Check if we have all responses or got a positive one
-        if packet.has_drone or len(pending['responses']) >= pending['expected']:
-            await self.finalize_negotiation(request_id)
-    
-    async def finalize_negotiation(self, request_id: str):
-        pending = self.pending_requests[request_id]
-        original = pending['original']
-        
-        # Find best offer
-        best = None
-        for resp in pending['responses']:
-            if resp.has_drone and resp.drone:
-                if best is None or resp.lending_cost < best.lending_cost:
-                    best = resp
-        
-        if best:
-            log.info(f"[CENTRAL] [OK] Found drone {best.drone.id} from {best.sender_id} (cost: {best.lending_cost})")
-            
-            # Confirm to lender
-            confirm = ConfirmDroneLendPacket(
-                sender_id=CENTRAL_ID,
-                request_id=request_id,
-                drone_id=best.drone.id,
-                requester_company_id=original.sender_id,
-                accepted=True
-            )
-            await self.send(new_message(confirm, best.sender_id))
-            
-            # Notify requester
-            lent = DroneLentPacket(
-                sender_id=CENTRAL_ID,
-                request_id=request_id,
-                drone=best.drone,
-                lender_company_id=best.sender_id,
-                lending_cost=best.lending_cost
-            )
-            await self.send(new_message(lent, original.sender_id))
-            log.info(f"[CENTRAL] [OK] Drone {best.drone.id} assigned to {original.sender_id}")
-        else:
-            log.warning(f"[CENTRAL] [FAIL] No drones available from any company")
-            response = ResponseDronePacket(CENTRAL_ID, None, 0.0)
-            await self.send(new_message(response, original.sender_id))
-        
-        del self.pending_requests[request_id]
-
-    async def handle_drone_return(self, packet: ReturnDronePacket):
-        """Handle drone return and notify the lender company."""
-        log.info(f"[CENTRAL] Processing drone return: {packet.drone_id} -> {packet.lender_company_id}")
-        
-        # Notify the lender that their drone is back
-        returned_packet = DroneReturnedPacket(
-            sender_id=CENTRAL_ID,
-            drone_id=packet.drone_id
-        )
-        await self.send(new_message(returned_packet, packet.lender_company_id))
-        log.info(f"[CENTRAL] [OK] Notified {packet.lender_company_id} that drone {packet.drone_id} is returned")
-
-
-class TestCompanyAgent(Agent):
-    """Empresa de teste que responde a pedidos de empréstimo."""
-    
-    def __init__(self, jid: str, password: str, has_drone: bool = True):
-        super().__init__(jid, password)
-        self.has_drone = has_drone
-        self.drone = None
-        self.drone_lent = False  # Track if drone is currently lent out
-        if has_drone:
-            self.drone = DroneInfo(
-                id=f"DRONE_{jid.split('@')[0].upper()}",
-                model="Test Drone",
-                capacity_kg=10.0,
-                speed_kmh=80,
-                battery_percent=100
-            )
-    
-    async def setup(self):
-        log.info(f"[{self.jid.node.upper()}] Started (has_drone: {self.has_drone})")
-        self.add_behaviour(CompanyReceiverBehaviour(self.drone))
-
-
-class CompanyReceiverBehaviour(CyclicBehaviour):
-    def __init__(self, drone: DroneInfo):
-        super().__init__()
-        self.drone = drone
-    
-    async def run(self):
-        msg = await self.receive(timeout=1)
-        if not msg:
-            return
-        
-        try:
-            packet = Packet.deserialize(msg.body)
-        except:
-            return
-        
-        company = self.agent.jid.node.upper()
-        
-        if isinstance(packet, RequestDroneLendPacket):
-            log.info(f"[{company}] Received lend request for {packet.requester_company_id}")
-            
-            if self.drone and not self.agent.drone_lent:
-                log.info(f"[{company}] [OK] Offering drone {self.drone.id}")
-                response = ResponseDroneLendPacket(
-                    sender_id=self.agent.jid.node,
-                    request_id=packet.request_id,
-                    has_drone=True,
-                    drone=self.drone,
-                    lending_cost=15.0
-                )
-            else:
-                log.info(f"[{company}] [NO] No drone available")
-                response = ResponseDroneLendPacket(
-                    sender_id=self.agent.jid.node,
-                    request_id=packet.request_id,
-                    has_drone=False
-                )
-            
-            await self.send(new_message(response, CENTRAL_ID))
-            
-        elif isinstance(packet, ConfirmDroneLendPacket):
-            if packet.accepted:
-                self.agent.drone_lent = True
-                log.info(f"[{company}] [OK] Drone lending confirmed! Drone is now with {packet.requester_company_id}")
-            else:
-                log.info(f"[{company}] Drone lending rejected")
-                
-        elif isinstance(packet, DroneLentPacket):
-            log.info(f"[{company}] [OK] Received lent drone {packet.drone.id} from {packet.lender_company_id}!")
-            
-        elif isinstance(packet, DroneReturnedPacket):
-            self.agent.drone_lent = False
-            log.info(f"[{company}] [OK] *** DRONE {packet.drone_id} RETURNED! *** Drone is available again.")
-
-
-class RequesterCompanyAgent(Agent):
-    """Empresa que pede drone e depois faz entrega e devolve."""
-    
-    def __init__(self, jid: str, password: str):
-        super().__init__(jid, password)
-        self.borrowed_drone = None
-        self.lender_company = None
-    
-    async def setup(self):
-        log.info(f"[{self.jid.node.upper()}] Started (will request drone)")
-        self.add_behaviour(RequesterReceiverBehaviour())
-        self.add_behaviour(RequesterBehaviour())
-
-
-class RequesterReceiverBehaviour(CyclicBehaviour):
-    async def run(self):
-        msg = await self.receive(timeout=1)
-        if not msg:
-            return
-        
-        try:
-            packet = Packet.deserialize(msg.body)
-        except:
-            return
-        
-        company = self.agent.jid.node.upper()
-        
-        if isinstance(packet, DroneLentPacket):
-            log.info(f"[{company}] [OK] Received lent drone {packet.drone.id} from {packet.lender_company_id}")
-            self.agent.borrowed_drone = packet.drone
-            self.agent.lender_company = packet.lender_company_id
-            
-            # Start delivery simulation
-            self.agent.add_behaviour(DeliveryBehaviour(packet.drone, packet.lender_company_id))
-            
-        elif isinstance(packet, ResponseDronePacket):
-            if packet.drone:
-                log.info(f"[{company}] [OK] Got drone {packet.drone.id}")
-            else:
-                log.info(f"[{company}] [NO] No drone available")
+        # Check if we have any borrowed drones
+        if hasattr(self.agent, 'rented_drones') and len(self.agent.rented_drones) > 0:
+            for drone in self.agent.rented_drones:
+                # Check if this is a borrowed drone (not yet used)
+                if drone.available and drone.id.startswith('DRONE'):
+                    # Found a borrowed drone, start delivery!
+                    log.info(f"[{self.agent.jid.node.upper()}] Found borrowed drone {drone.id}, starting delivery!")
+                    
+                    # Find the lender
+                    lender = None
+                    receiver_behaviour = None
+                    for behaviour in self.agent.behaviours:
+                        if hasattr(behaviour, 'borrowed_drones'):
+                            receiver_behaviour = behaviour
+                            if drone.id in behaviour.borrowed_drones:
+                                lender = behaviour.borrowed_drones[drone.id]['lender']
+                                break
+                    
+                    if lender:
+                        # Mark drone as unavailable and start delivery
+                        drone.available = False
+                        self.agent.add_behaviour(DeliveryBehaviour(drone, lender))
+                        # Remove this behaviour since we've triggered delivery
+                        self.kill()
+                        return
 
 
 class RequesterBehaviour(OneShotBehaviour):
-    async def run(self):
-        company = self.agent.jid.node.upper()
+    def __init__(self, company_id: str):
+        super().__init__()
+        self.company_id = company_id
         
-        log.info(f"[{company}] Waiting 2 seconds before requesting...")
+    async def run(self):
+        log.info(f"[{self.company_id}] Waiting 2 seconds before requesting...")
         await asyncio.sleep(2)
         
-        log.info(f"[{company}] Sending drone request to Central...")
+        log.info(f"[{self.company_id}] Sending drone request to Central...")
         
         request = RequestDronePacket(
-            sender_id=self.agent.jid.node,
+            sender_id=self.company_id.lower(),
             company_budget=1000.0,
             package_weight=2.0,
             client_location=GeoCoord(41.88, -87.63),
-            pickup_location=GeoCoord(41.89, -87.62)
+            pickup_location=self.agent.location  
         )
         
         await self.send(new_message(request, CENTRAL_ID))
-        log.info(f"[{company}] Request sent! Waiting for drone...")
+        log.info(f"[{self.company_id}] Request sent! Waiting for drone...")
 
 
 class DeliveryBehaviour(OneShotBehaviour):
@@ -335,30 +129,35 @@ class DeliveryBehaviour(OneShotBehaviour):
         await self.send(new_message(return_packet, CENTRAL_ID))
         
         log.info(f"[{company}] [OK] Drone return request sent to Central")
-        
-        # Clear local reference
-        self.agent.borrowed_drone = None
-        self.agent.lender_company = None
 
 
 async def main():
     log.info("=" * 70)
     log.info("   TESTE COMPLETO: NEGOCIACAO + ENTREGA + DEVOLUCAO")
+    log.info("   COM EMPRESAS E DRONES REAIS")
     log.info("=" * 70)
+    
+    # Load real companies and drones
+    companies_data = load_companies_from_json()
+    drones_data = load_drones_from_json()
+    
+    # Use first 3 companies
+    company_ids = [c["id"] for c in companies_data]
+    
     log.info("")
     log.info("Cenario:")
-    log.info(f"  - Central: SEM drones (forca negociacao)")
-    log.info(f"  - COMPANY_A: Pede drone ao Central")
-    log.info(f"  - COMPANY_B: TEM drone para emprestar")
-    log.info(f"  - COMPANY_C: NAO tem drone")
+    log.info(f"  - Central: COM drones reais (mas vamos forcar negociacao)")
+    log.info(f"  - {company_ids[0]}: Vai pedir drone ao Central")
+    log.info(f"  - {company_ids[1]}: TEM drones proprios para emprestar")
+    log.info(f"  - {company_ids[2]}: Pode ter ou nao drones")
     log.info("")
     log.info("Fluxo esperado:")
-    log.info("  1. COMPANY_A pede drone")
-    log.info("  2. Central negocia com B e C")
-    log.info("  3. COMPANY_B empresta drone")
-    log.info("  4. COMPANY_A faz entrega (simulado)")
-    log.info("  5. COMPANY_A devolve drone")
-    log.info("  6. COMPANY_B recebe drone de volta")
+    log.info(f"  1. {company_ids[0]} pede drone")
+    log.info("  2. Central negocia com outras empresas")
+    log.info(f"  3. {company_ids[1]} empresta drone")
+    log.info(f"  4. {company_ids[0]} faz entrega (simulado)")
+    log.info(f"  5. {company_ids[0]} devolve drone")
+    log.info(f"  6. {company_ids[1]} recebe drone de volta")
     log.info("")
     log.info("=" * 70)
     
@@ -367,49 +166,92 @@ async def main():
     agents = []
     
     try:
-        # 1. Start Central (without drones)
-        central = SimpleCentralAgent(
+        # 1. Start Central with real drones (but force negotiation)
+        # Prepare drones with agent info
+        drones_with_agent = []
+        for drone_data in drones_data[:2]:  # Use first 2 drones
+            drones_with_agent.append({
+                'agent': None,  # Central doesn't use DroneAgents directly
+                'info': drone_data
+            })
+        
+        # Enable force negotiation mode
+        from service.central import central_agent
+        central_agent.FORCE_NEGOTIATION_TEST = True
+        
+        central = CentralAgent(
             get_agent_jid(CENTRAL_ID),
             _DEFAULT_PASSWORD,
-            TEST_COMPANIES
+            drones_with_agent,
+            company_ids
         )
         await central.start(auto_register=True)
         agents.append(central)
+        log.info(f"[CENTRAL] Started with {len(drones_with_agent)} drones (negotiation forced)")
         
         await asyncio.sleep(0.5)
         
-        # 2. Start Company A (REQUESTER - uses special agent)
-        company_a = RequesterCompanyAgent(
-            get_agent_jid(TEST_COMPANIES[0]),
-            _DEFAULT_PASSWORD
-        )
-        await company_a.start(auto_register=True)
-        agents.append(company_a)
+        # 2. Start Company agents with real data
+        for i, company_data in enumerate(companies_data):
+            company_id = company_data["id"]
+            location = GeoCoord(company_data["location"]["lat"], company_data["location"]["lon"])
+            budget = company_data.get("annual_revenue_usd", 1000000) / 1000000  # Convert to millions
+            
+            company = CompanyAgent(
+                get_agent_jid(company_id),
+                _DEFAULT_PASSWORD,
+                budget,
+                location
+            )
+            await company.start(auto_register=True)
+            agents.append(company)
+            log.info(f"[{company_id}] Started at ({location.latitude:.3f}, {location.longitude:.3f})")
+            
+            # Add drones to AMAZON and APPLE so they can lend them
+            if i == 1:  # AMAZON (second company)
+                # Give AMAZON 2 drones
+                drone1 = DroneInfo(
+                    id=drones_data[0]["id"],
+                    model=drones_data[0]["model"],
+                    capacity_kg=drones_data[0]["capacity_kg"],
+                    speed_kmh=drones_data[0]["speed_kmh"],
+                    battery_percent=drones_data[0]["battery_percent"]
+                )
+                drone1.current_position = location
+                drone1.available = True  # Make sure it's available
+                company.rented_drones.append(drone1)
+                log.info(f"[{company_id}] Added drone {drone1.id} for lending (available={drone1.available}, capacity={drone1.capacity_kg}kg)")
+                
+            elif i == 2:  # APPLE (third company)
+                # Give APPLE 1 drone
+                drone2 = DroneInfo(
+                    id=drones_data[1]["id"],
+                    model=drones_data[1]["model"],
+                    capacity_kg=drones_data[1]["capacity_kg"],
+                    speed_kmh=drones_data[1]["speed_kmh"],
+                    battery_percent=drones_data[1]["battery_percent"]
+                )
+                drone2.current_position = location
+                drone2.available = True  # Make sure it's available
+                company.rented_drones.append(drone2)
+                log.info(f"[{company_id}] Added drone {drone2.id} for lending (available={drone2.available}, capacity={drone2.capacity_kg}kg)")
+            
+            await asyncio.sleep(0.3)
         
-        # 3. Start Company B (has drone to lend)
-        company_b = TestCompanyAgent(
-            get_agent_jid(TEST_COMPANIES[1]),
-            _DEFAULT_PASSWORD,
-            has_drone=True
-        )
-        await company_b.start(auto_register=True)
-        agents.append(company_b)
+        # 3. Add requester behaviour to first company
+        requester_company = agents[1]  # First company agent (after central)
+        log.info(f"[{company_ids[0]}] Will request drone in 2 seconds...")
+        requester_company.add_behaviour(RequesterBehaviour(company_ids[0]))
         
-        # 4. Start Company C (no drone)
-        company_c = TestCompanyAgent(
-            get_agent_jid(TEST_COMPANIES[2]),
-            _DEFAULT_PASSWORD,
-            has_drone=False
-        )
-        await company_c.start(auto_register=True)
-        agents.append(company_c)
+        # Add a watcher to start delivery when drone arrives
+        requester_company.add_behaviour(DeliveryTriggerBehaviour())
         
         log.info("")
         log.info("All agents started. Running test...")
         log.info("")
         
         # Wait for full cycle: negotiation + delivery + return
-        await asyncio.sleep(15)
+        await asyncio.sleep(20)
         
     except KeyboardInterrupt:
         log.info("Interrupted")
