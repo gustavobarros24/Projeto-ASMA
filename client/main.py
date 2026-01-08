@@ -16,7 +16,6 @@ from client.ui import *
 _CLIENT_NAME = "client1"
 _CLIENT_PASSWORD = "123"
 _CLIENT_LOCATION = GeoCoord.random_geocoord()
-#_CLIENT_LOCATION = GeoCoord( 41.90,-87.60 ) # para teste
 _BUDGET = 5000.00 
 
 log = get_logger( name = f"client.{ _CLIENT_NAME }", log_dir = "logs", console = False )

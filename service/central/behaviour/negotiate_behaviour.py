@@ -18,8 +18,6 @@ log = logging.getLogger(__name__)
 
 # Constants
 _NEGOTIATION_TIMEOUT = 8  # seconds to wait for company responses
-_BASE_LENDING_FEE = 8.0   # base fee for lending a drone
-
 
 @dataclass
 class PendingNegotiation:

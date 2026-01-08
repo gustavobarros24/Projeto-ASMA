@@ -29,8 +29,6 @@ class DeliveryBehaviour(OneShotBehaviour):
         dist_delivery = self.pickup_location.distance_to(self.package.location)
         dist_return = self.package.location.distance_to(home_pos)
 
-        total_dist = dist_pickup + dist_delivery + dist_return
-
         # parte do voo sem carga (base -> pickup) e (cliente -> base).
         empty_dist = dist_pickup + dist_return
         cost_empty = empty_dist * (_BASE_CONSUMPTION_PER_KM + (drone.speed_kmh * _SPEED_FACTOR_PER_KMH))

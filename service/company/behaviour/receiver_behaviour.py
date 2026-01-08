@@ -17,8 +17,6 @@ _TIMEOUT = 1 # second
 _LENDING_FEE_PER_KM = 0.20  # fee per km for lending drone
 _BASE_LENDING_FEE = 2.0     # base fee for lending
 
-#log = logging.getLogger( __name__ )
-
 class ReceiverBehaviour( CyclicBehaviour ):
 	def __init__( self, *, log = None):
 		super().__init__()
