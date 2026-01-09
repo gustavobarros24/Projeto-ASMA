@@ -13,7 +13,7 @@ from client.ui import *
 ===============================================================================
 """
 
-_CLIENT_NAME = "client1"
+_CLIENT_NAME = "client" + generate_id()[:4]
 _CLIENT_PASSWORD = "123"
 _CLIENT_LOCATION = GeoCoord.random_geocoord()
 _BUDGET = 5000.00 

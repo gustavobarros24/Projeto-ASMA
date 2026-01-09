@@ -3,31 +3,27 @@ import asyncio
 import uuid
 import json
 
-from utils.logger import get_logger
-from config.config import *
-from common.geo_coord import GeoCoord
-from common.packet import (
+from ..utils.logger import get_logger
+from ..utils.utils import *
+from ..config.config import *
+from ..common.geo_coord import GeoCoord
+from ..common.packet import (
     Packet, RequestDronePacket, ResponseDronePacket, DroneLentPacket,
     RequestDroneLendPacket, ResponseDroneLendPacket, ConfirmDroneLendPacket,
     ReturnDronePacket, DroneReturnedPacket
 )
-from common.drone_info import DroneInfo
-from utils.communication import new_message
+from ..common.drone_info import DroneInfo
+from ..utils.communication import new_message
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour, OneShotBehaviour
 from service.central.central_agent import CentralAgent
 from service.company.company_agent import CompanyAgent
-from common.packet import DroneLentPacket
+from ..common.packet import DroneLentPacket
 
 log = get_logger(name="test_negotiation", log_dir="logs", console=True)
 
 _DEFAULT_PASSWORD = "123"
 _DELIVERY_TIME = 3  # seconds to simulate delivery
-
-# Paths to JSON files
-COMPANIES_PATH = "assets/companies.json"
-DRONES_PATH = "assets/_drones.json"
-
 
 def load_companies_from_json():
     """Load companies from JSON file."""
