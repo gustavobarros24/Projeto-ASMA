@@ -1,9 +1,10 @@
 import random
+import math
 
 from dataclasses import dataclass
 from math import radians, sin, cos, asin, sqrt
 from typing import Optional, Tuple
-
+from config.config import *
 
 """
 ===============================================================================
@@ -18,8 +19,9 @@ _LAT_MIN: float = -90.0
 _LAT_MAX: float = 90.0
 _LON_MIN: float = -180.0
 _LON_MAX: float = 180.0
-_ALT_MIN = 0.0
-_ALT_MAX = 2000
+_MAX_RAD = 30
+_ALT_MIN = 0
+_ALT_MAX = 2
 _TOLERANCE_LATLON_DEGREE = 1e-7  # ~1 cm at equator
 _TOLERANCE_ALT_M = 0.01       # 1 cm
 
@@ -80,15 +82,31 @@ class GeoCoord:
 			raise TypeError( f"Expected GeoCoord, got {type( other )!r}")
 
 	@staticmethod
-	def random_geocoord( *, min_alt_m: float = _ALT_MIN, max_alt_m: float = _ALT_MAX, with_altitude: bool = True ) -> "GeoCoord":
-		latitude = random.uniform( _LAT_MIN, _LAT_MAX )
-		longitude = random.uniform( _LON_MIN, _LON_MAX )
+	def random_geocoord( *, radius: float = _MAX_RAD, min_alt: float = _ALT_MIN, max_alt: float = _ALT_MAX, with_altitude: bool = True ) -> "GeoCoord":
+		d = random.uniform( 0, radius ) * 1000
+		bearing = random.uniform( 0, 2 * math.pi )
 
-		altitude: Optional[float]
-		if with_altitude:
-			altitude = random.uniform( min_alt_m, max_alt_m )
-		else:
-			altitude = None
+		lat1 = radians( CENTRAL_LAT )
+		lon1 = radians( CENTRAL_LON )
+
+		R = _WGS84_EARTH_RADIUS_M
+
+		lat2 = asin(
+			sin(lat1) * cos( d / R )
+			+ cos(lat1) * sin( d / R ) * cos( bearing )
+		)
+
+		lon2 = lon1 + math.atan2(
+			sin(bearing) * sin( d / R ) * cos( lat1 ),
+			cos( d / R ) - sin( lat1 ) * sin( lat2 )
+		)
+
+		latitude = math.degrees( lat2 )
+		longitude = math.degrees( lon2 )
+
+		min_alt_m = min_alt * 1000
+		max_alt_m = max_alt * 1000
+		altitude = random.uniform( min_alt_m, max_alt_m ) if with_altitude else None
 
 		return GeoCoord(
 			latitude = latitude,

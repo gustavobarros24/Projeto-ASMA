@@ -14,7 +14,6 @@ from utils.communication import new_message
 _PRICE_PER_KM = 0.50
 _BASE_FEE = 3.0
 
-
 class ReceiverBehaviour(CyclicBehaviour):
     def __init__(self, log):
         super().__init__()
