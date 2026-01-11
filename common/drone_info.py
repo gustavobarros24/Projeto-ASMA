@@ -12,8 +12,8 @@ from config.config import *
 ===============================================================================
 """
 
-_BASE_CONSUMPTION_PER_KM = 1.0      # % battery per km (empty drone)
-_WEIGHT_FACTOR_PER_KG = 0.3         # extra % per km per kg
+_BASE_CONSUMPTION_PER_KM = 0.8      # % battery per km (empty drone)
+_WEIGHT_FACTOR_PER_KG = 0.2         # extra % per km per kg
 _SPEED_FACTOR_PER_KMH = 0.01        # extra % per km per km/h
 _SAFETY_MARGIN = 5.0                # % battery kept in reserve
 

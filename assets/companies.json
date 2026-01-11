@@ -8,8 +8,8 @@
       "annual_revenue_usd": 680000000000,
       "url": "https://www.walmart.com",
       "location": {
-        "lat": 51.880000,
-        "lon": -67.630000
+        "lat": 41.890500,
+        "lon": -87.620000
       }
     },
     {
@@ -20,8 +20,8 @@
       "annual_revenue_usd": 638000000000,
       "url": "https://www.amazon.com",
       "location": {
-        "lat": 61.890000,
-        "lon": -67.610000
+        "lat": 41.880000,
+        "lon": -87.635000
       }
     },
     {
@@ -33,7 +33,7 @@
       "url": "https://www.apple.com",
       "location": {
         "lat": 41.895000,
-        "lon": -47.625000
+        "lon": -87.630000
       }
     },
     {
@@ -44,8 +44,8 @@
       "annual_revenue_usd": 45100000000,
       "url": "https://www.ikea.com",
       "location": {
-        "lat": 45.900000,
-        "lon": -87.640000
+        "lat": 41.885000,
+        "lon": -87.625000
       }
     },
     {
@@ -56,8 +56,8 @@
       "annual_revenue_usd": 109000000000,
       "url": "https://www.alibaba.com",
       "location": {
-        "lat": 43.870000,
-        "lon": -89.620000
+        "lat": 41.892000,
+        "lon": -87.628000
       }
     },
     {
@@ -68,8 +68,8 @@
       "annual_revenue_usd": 51000000000,
       "url": "https://www.nike.com",
       "location": {
-        "lat": 44.885000,
-        "lon": -88.615000
+        "lat": 41.887500,
+        "lon": -87.622500
       }
     }
   ]
