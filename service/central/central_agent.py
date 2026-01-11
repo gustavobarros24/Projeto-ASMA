@@ -4,6 +4,7 @@ from utils.logger import get_logger
 from common.drone_info import DroneInfo
 from .behaviour.receiver_behaviour import ReceiverBehaviour
 from .behaviour.negotiate_behaviour import NegotiateBehaviour
+from .web_api import CentralWebAPI
 from config.config import *
 
 
@@ -54,3 +55,11 @@ class CentralAgent(Agent):
             log.info("Negotiate behaviour added for drone lending between companies")
 
         self.add_behaviour(ReceiverBehaviour(log))
+        
+        # Setup web API (delegated to separate module)
+        web_api = CentralWebAPI(self)
+        web_api.setup_routes()
+        web_api.start(hostname="127.0.0.1", port=10000)
+        
+        log.info("Web API started at http://127.0.0.1:10000")
+        log.info("For dashboard, run: python service/central/web_server.py")
