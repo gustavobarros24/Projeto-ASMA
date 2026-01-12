@@ -17,7 +17,7 @@ _WEIGHT_FACTOR_PER_KG = 0.2         # extra % per km per kg
 _SPEED_FACTOR_PER_KMH = 0.01        # extra % per km per km/h
 _SAFETY_MARGIN = 5.0                # % battery kept in reserve
 
-_SIMULATION_SPEED_SCALE = 100.0  # speed factor for the simulation (e.g., 100.0 means the simulation runs 100x faster than real-time)
+_SIMULATION_SPEED_SCALE = 1.0  # speed factor for the simulation (e.g., 100.0 means the simulation runs 100x faster than real-time)
 
 @dataclass( slots = True, unsafe_hash = True )
 class DroneInfo:

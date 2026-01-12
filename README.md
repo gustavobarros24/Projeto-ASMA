@@ -34,15 +34,13 @@ For SPADE to work, the DOMAIN needs to be the PC name.
 
 ---
 
-# Como Executar
-
-## ⭐ Opção Recomendada: Sistema Completo com Cliente (run_all.py)
+## Teste rápido de multiplos clientes
 
 **A forma mais simples de executar tudo num único processo!**
 
 ### Executar tudo de uma vez
 ```bash
-python run_all.py
+python -m tests.run_all
 ```
 
 Isto inicia automaticamente:
