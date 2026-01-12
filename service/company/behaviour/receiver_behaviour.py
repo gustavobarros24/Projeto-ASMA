@@ -120,8 +120,17 @@ class ReceiverBehaviour( CyclicBehaviour ):
 		available_drone = None
 		for drone in self.agent.rented_drones:
 			if drone.available and drone.capacity_kg >= packet.package_weight:
-				available_drone = drone
-				break
+				dist_to_pickup = drone.current_position.distance_to(packet.pickup_location)
+				dist_delivery = packet.pickup_location.distance_to(packet.client_location)
+				battery_needed = drone.calculate_delivery_battery(dist_to_pickup, dist_delivery, packet.package_weight)
+				
+				if drone.battery_percent >= battery_needed:
+					available_drone = drone
+					break
+				else:
+					log.debug(f"Drone {drone.id} skipped: insufficient battery ({drone.battery_percent}% < {battery_needed:.1f}% needed)")
+			elif drone.available:
+				log.debug(f"Drone {drone.id} skipped: insufficient capacity ({drone.capacity_kg} < {packet.package_weight})")
 
 		if available_drone:
 			# Calculate lending cost based on distance
