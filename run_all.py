@@ -21,10 +21,7 @@ from service.central import web_server
 """
 
 _DEFAULT_PASSWORD = "123"
-_CLIENT_NAME = "client" + generate_id()[:4]
-_BUDGET = 5000.00
-_CLIENT_LOCATION = GeoCoord.random_geocoord()
-_WEB_PORT = 5001
+_WEB_PORT_START = 5001  # First client will use 5001, second 5002, etc.
 
 log = get_logger(name="run_all", log_dir="logs", console=True)
 
@@ -53,6 +50,21 @@ def _load_drones():
         for d in data["drones"]
     ]
 
+def _load_clients():
+    with open(CLIENTS_PATH) as f:
+        data = json.load(f)
+    return [
+        {
+            "id": c["id"],
+            "name": c["name"],
+            "jid": get_agent_jid(c["id"]),
+            "password": _DEFAULT_PASSWORD,
+            "location": GeoCoord(c["location"]["lat"], c["location"]["lon"]),
+            "budget": c["budget"]
+        }
+        for c in data["clients"]
+    ]
+
 async def main():
     log.info("Starting all agents in single process...")
     
@@ -62,6 +74,9 @@ async def main():
     
     drones = _load_drones()
     log.info(f"Loaded {len(drones)} drones")
+    
+    clients = _load_clients()
+    log.info(f"Loaded {len(clients)} clients")
     
     company_ids = [c["jid"].split("@")[0] for c in companies]
     
@@ -94,22 +109,31 @@ async def main():
     # Wait for all agents to connect
     await asyncio.sleep(2)
     
-    # Start Client
-    log.info(f"Starting Client Agent: {_CLIENT_NAME}...")
-    client_log = get_logger(name=f"client.{_CLIENT_NAME}", log_dir="logs", console=False)
-    client_agent = ClientAgent(
-        get_agent_jid(_CLIENT_NAME),
-        _DEFAULT_PASSWORD,
-        _BUDGET,
-        _CLIENT_LOCATION,
-        log=client_log
-    )
-    await client_agent.start(auto_register=True)
+    # Start Clients from JSON
+    log.info(f"Starting {len(clients)} Client Agent(s)...")
+    client_agents = []
+    web_uis = []
     
-    # Start Web UI
-    log.info(f"Starting Web UI on port {_WEB_PORT}...")
-    web_ui = ClientWebUI(client_agent, port=_WEB_PORT)
-    await web_ui.start()
+    for i, client in enumerate(clients):
+        web_port = _WEB_PORT_START + i
+        
+        log.info(f"Starting Client {i+1}/{len(clients)}: {client['name']} on port {web_port}...")
+        client_log = get_logger(name=f"client.{client['id']}", log_dir="logs", console=False)
+        
+        client_agent = ClientAgent(
+            client["jid"],
+            client["password"],
+            client["budget"],
+            client["location"],
+            log=client_log
+        )
+        await client_agent.start(auto_register=True)
+        client_agents.append(client_agent)
+        
+        # Start Web UI for this client
+        web_ui = ClientWebUI(client_agent, port=web_port)
+        await web_ui.start()
+        web_uis.append(web_ui)
     
     # Start Central Dashboard
     log.info("Starting Central Dashboard on port 5000...")
@@ -120,13 +144,13 @@ async def main():
     await dashboard_site.start()
     
     print(f"\n{'='*60}")
-    print(f" Sistema iniciado com sucesso!")
+    print(f" Sistema iniciado!")
     print(f"{'='*60}")
     print(f" Dashboard Central: http://127.0.0.1:5000")
-    print(f" Interface Cliente: http://localhost:{_WEB_PORT}")
-    print(f" Cliente ID: {_CLIENT_NAME}")
-    print(f" Orçamento: ${_BUDGET:.2f}")
-    print(f" Localização: {_CLIENT_LOCATION}")
+    print(f" Interfaces dos Clientes:")
+    for i, client in enumerate(clients):
+        port = _WEB_PORT_START + i
+        print(f"   - {client['name']} ({client['id']}): http://localhost:{port}")
     print(f"{'='*60}\n")
     print("Todos os agentes estão a correr. Pressione Ctrl+C para parar.")
     
@@ -137,14 +161,15 @@ async def main():
         log.info("Shutting down all agents...")
     finally:
         await dashboard_runner.cleanup()
-        await client_agent.stop()
+        for client_agent in client_agents:
+            await client_agent.stop()
+        for web_ui in web_uis:
+            await web_ui.stop()
         for agent in company_agents:
             await agent.stop()
         for agent in drone_agents:
             await agent.stop()
         await central_agent.stop()
-        if web_ui:
-            await web_ui.stop()
 
 if __name__ == "__main__":
     spade.run(main())

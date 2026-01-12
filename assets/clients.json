@@ -1,0 +1,31 @@
+{
+  "clients": [
+    {
+      "id": "JOAO",
+      "name": "João Silva",
+      "location": {
+        "lat": 41.895000,
+        "lon": -87.625000
+      },
+      "budget": 5000.00
+    },
+    {
+      "id": "MARIA",
+      "name": "Maria Santos",
+      "location": {
+        "lat": 41.885000,
+        "lon": -87.630000
+      },
+      "budget": 3000.00
+    },
+    {
+      "id": "PEDRO",
+      "name": "Pedro Costa",
+      "location": {
+        "lat": 41.890000,
+        "lon": -87.640000
+      },
+      "budget": 7500.00
+    }
+  ]
+}

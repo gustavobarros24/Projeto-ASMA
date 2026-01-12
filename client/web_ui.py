@@ -105,14 +105,16 @@ class ClientWebUI:
         if items:
             items_html = f'<h2 class="section-title">📦 Produtos Disponíveis ({len(items)})</h2><div class="items-grid">'
             for item_id, item in items.items():
+                # Escape quotes for JavaScript
+                safe_name = item.name.replace("'", "\\'").replace('"', '&quot;')
                 items_html += f'''
         <div class="item-card">
             <div class="item-name">{item.name}</div>
             <div class="item-price">💵 {item.price_usd:.2f} USD</div>
             <div class="item-details">📦 Peso: {item.weight_kg} kg</div>
-            <div class="item-details">� {item.description}</div>
+            <div class="item-details">📄 {item.description}</div>
             <div class="item-details">🔖 ID: {item_id}</div>
-            <button class="buy-btn" onclick="buyItem('{item_id}', '{item.name}', {item.price_usd})">
+            <button class="buy-btn" onclick="buyItem('{item_id}', '{safe_name}', {item.price_usd})">
                 🛒 Comprar
             </button>
         </div>
