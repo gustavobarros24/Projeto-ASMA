@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company.name }} - Cliente ASMA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+        }
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+        .nav a {
+            color: #667eea;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        .nav a:hover {
+            background: #667eea;
+            color: white;
+        }
+        .user-info {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .info-card {
+            padding: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .info-label {
+            color: #999;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+        .content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .back-btn {
+            display: inline-block;
+            background: #6c757d;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        .back-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        .company-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        .company-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .company-header .url {
+            opacity: 0.9;
+            font-size: 1em;
+            margin-top: 10px;
+        }
+        .fetch-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        .fetch-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        .section-title {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 25px;
+        }
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        .item-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 25px;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        .item-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+            transform: translateY(-4px);
+        }
+        .item-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .item-price {
+            font-size: 2em;
+            color: #28a745;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .item-details {
+            font-size: 0.95em;
+            color: #666;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+        }
+        .buy-btn {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        .buy-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .alert {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 1.1em;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+            font-size: 1.3em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 Cliente ASMA</h1>
+            <nav class="nav">
+                <a href="/">Home</a>
+                <a href="/purchases">Minhas Compras</a>
+            </nav>
+        </div>
+
+        <div class="user-info">
+            <div class="info-card">
+                <div class="info-label">💰 Saldo Disponível</div>
+                <div class="info-value">{{ budget }} USD</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">📍 Localização</div>
+                <div class="info-value" style="font-size: 0.9em;">{{ location }}</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">👤 Cliente ID</div>
+                <div class="info-value" style="font-size: 1em; font-family: monospace;">{{ client_id }}</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <a href="/" class="back-btn">← Voltar às Empresas</a>
+
+            <div class="company-header">
+                <h1>{{ company.name }}</h1>
+                <div class="url">🌐 {{ company.url }}</div>
+                <div class="url">ID: {{ company_id }}</div>
+            </div>
+
+            <button class="fetch-btn" onclick="fetchInventory()">🔄 Encontrar Inventário</button>
+
+            <div id="items-container">
+                <!-- Items will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function fetchInventory() {
+            const container = document.getElementById('items-container');
+            container.innerHTML = '<div class="loading">⏳ Encontrar produtos...</div>';
+            
+            fetch('/api/fetch_inventory/{{ company_id }}', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    container.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
+                }
+            })
+            .catch(error => {
+                container.innerHTML = '<div class="alert alert-error">Erro ao Encontrar inventário.</div>';
+            });
+        }
+
+        function buyItem(itemId, itemName, price) {
+            if (!confirm(`Confirmar compra de "${itemName}" por $${price.toFixed(2)}?`)) {
+                return;
+            }
+
+            fetch('/api/buy_item', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    company_id: '{{ company_id }}',
+                    item_id: itemId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Compra realizada com sucesso!');
+                    location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Erro ao realizar compra.');
+            });
+        }
+    </script>
+</body>
+</html>
