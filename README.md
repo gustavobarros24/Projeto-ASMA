@@ -36,7 +36,42 @@ For SPADE to work, the DOMAIN needs to be the PC name.
 
 # Como Executar
 
-## Opção 1: Sistema Completo (Backend + Frontend)
+## ⭐ Opção Recomendada: Sistema Completo com Cliente (run_all.py)
+
+**A forma mais simples de executar tudo num único processo!**
+
+### Executar tudo de uma vez
+```bash
+python run_all.py
+```
+
+Isto inicia automaticamente:
+- ✅ Agente Central (API na porta 10000)
+- ✅ Agentes de Empresas (WALMART, AMAZON, APPLE, IKEA, ALIBABA, NIKE)
+- ✅ Agentes de Drones (5 drones)
+- ✅ Agente Cliente (cliente com orçamento de $5000)
+- ✅ Dashboard Central (porta 5000)
+- ✅ Interface Web do Cliente (porta 5001)
+
+### Acessos
+- **Dashboard Central**: http://127.0.0.1:5000
+  - Monitorizar drones, empresas e negociações
+  
+- **Interface do Cliente**: http://localhost:5001
+  - Ver empresas disponíveis
+  - Buscar inventário de produtos
+  - Comprar items
+  - Acompanhar entregas
+
+### Vantagens
+- ✅ Todos os agentes no mesmo processo → comunicação XMPP funciona perfeitamente
+- ✅ Apenas 1 comando para iniciar tudo
+- ✅ Interface completa para o cliente fazer compras
+- ✅ Sistema completo operacional
+
+---
+
+## Opção 2: Sistema Separado (Backend + Frontend)
 
 ### Terminal 1 - Iniciar Agentes (Backend)
 ```bash
@@ -59,8 +94,45 @@ Isto inicia:
 
 ### Abrir no Browser
 ```
-http://127.0.0.1:5000
+Dashboard Central: http://127.0.0.1:5000
 ```
+
+**Nota**: Esta opção NÃO inclui o cliente. Use `run_all.py` para ter sistema completo com interface do cliente.
+
+---
+
+## 📱 Interface Web do Cliente
+
+### Páginas Disponíveis
+
+**1. Home (Lista de Empresas)**
+- Visualiza todas as empresas disponíveis
+- Mostra orçamento atual e localização do cliente
+- Clica numa empresa para ver produtos
+
+**2. Página da Empresa**
+- Botão "🔄 Encontrar Inventário" para carregar produtos
+- Lista de produtos com nome, preço, peso e descrição
+- Botão "🛒 Comprar" para cada item
+- Atualização automática após buscar inventário
+
+**3. Minhas Compras**
+- Estatísticas: pedidos pendentes, items comprados, total gasto
+- ⏳ Pedidos Pendentes: Entregas em curso
+- ✅ Items Recebidos: Produtos já entregues com sucesso
+- Detalhes completos de cada compra
+
+### Fluxo de Compra
+1. Cliente acede à interface web
+2. Escolhe uma empresa
+3. Clica "Encontrar Inventário" (sistema pede à empresa)
+4. Escolhe produto e clica "Comprar"
+5. Sistema processa:
+   - Cliente envia pedido → Empresa
+   - Empresa solicita drone → Central
+   - Central atribui drone disponível
+   - Drone recolhe e entrega o pacote
+6. Item aparece em "Minhas Compras" quando entregue
 
 ---
 
