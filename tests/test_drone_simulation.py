@@ -19,6 +19,7 @@ from common.package import Package
 from common.packet import PackageInfo
 from service.drone.drone_agent import DroneAgent
 from service.drone.behaviour.delivery_behaviour import DeliveryBehaviour
+from service.drone.behaviour.charging_behaviour import ChargingBehaviour
 
 log = get_logger(name="test_drone_simulation", log_dir="logs", console=True)
 
@@ -258,8 +259,14 @@ async def test_successful_delivery():
     )
     
     await drone_agent.start(auto_register=True)
+
+    for behaviour in list(drone_agent.behaviours):
+        if isinstance(behaviour, ChargingBehaviour):
+            drone_agent.remove_behaviour(behaviour)
+            log.info(" [TEST SETUP]: ChargingBehaviour removed to measure battery consumption accurately.")
     
     initial_position = drone_agent.drone_info.current_position
+    drone_agent.drone_info.base_location = initial_position
     initial_battery = drone_agent.drone_info.battery_percent
     
     log.info(f"Initial position: ({initial_position.latitude:.3f}, {initial_position.longitude:.3f})")
@@ -308,9 +315,11 @@ async def test_successful_delivery():
     log.info(f"Expected battery consumption: {expected_consumption:.2f}%")
     
     drone_agent.add_behaviour(DeliveryBehaviour(packet, log=log))
-    
-    # Wait for delivery to complete
-    await asyncio.sleep(10)
+
+    flight_time = drone_agent.drone_info.calculate_flight_duration(total_dist)
+    wait_time = flight_time + 5.0
+    log.info(f"Waiting {wait_time:.2f}s for delivery...")
+    await asyncio.sleep(wait_time)
     
     final_position = drone_agent.drone_info.current_position
     final_battery = drone_agent.drone_info.battery_percent
@@ -361,8 +370,10 @@ async def test_charging_behaviour():
     )
     
     await drone_agent.start(auto_register=True)
-    
+
+    drone_agent.drone_info.base_location = drone_agent.drone_info.current_position
     initial_battery = drone_agent.drone_info.battery_percent
+
     log.info(f"Initial battery: {initial_battery}%")
     log.info(f"Drone is available: {drone_agent.drone_info.available}")
     log.info("Waiting 5 seconds for charging...")
@@ -390,35 +401,27 @@ async def main():
     log.info("Testing drone behaviours, timing, battery, and deliveries")
     log.info(f"Simulation speed factor: {_SIMULATION_SPEED_SCALE}x")
     log.info("")
-    
-    try:
-        # Test 1: Flight time calculation
-        await test_flight_time_calculation()
-        
-        # Test 2: Battery consumption
-        await test_battery_consumption()
-        
-        # Test 3: Capacity rejection
-        await test_capacity_rejection()
-        
-        # Test 4: Low battery rejection
-        await test_low_battery_rejection()
-        
-        # Test 5: Successful delivery
-        await test_successful_delivery()
-        
-        # Test 6: Charging behaviour
-        await test_charging_behaviour()
-        
-        print_section("ALL TESTS COMPLETED")
-        log.info(" All drone simulation tests passed!")
-        
-    except AssertionError as e:
-        log.error(f" Test failed: {e}")
-    except Exception as e:
-        log.error(f" Error during tests: {e}")
-        import traceback
-        traceback.print_exc()
+
+    # test 1: flight time calculation
+    await test_flight_time_calculation()
+
+    # test 2: battery consumption
+    await test_battery_consumption()
+
+    # test 3: capacity rejection
+    await test_capacity_rejection()
+
+    # test 4: low battery rejection
+    await test_low_battery_rejection()
+
+    # test 5: successful delivery
+    await test_successful_delivery()
+
+    # test 6: charging behaviour
+    await test_charging_behaviour()
+
+    print_section("ALL TESTS COMPLETED")
+    log.info(" All drone simulation tests passed!")
 
 
 if __name__ == "__main__":

@@ -13,3 +13,8 @@ class StatusUpdateBehaviour(PeriodicBehaviour):
         packet = DroneStatusPacket(self.agent.jid.node, drone_info)
         msg = new_message(packet, CENTRAL_ID)
         await self.send(msg)
+
+        if drone_info.owner_id:
+            msg_company = new_message(packet, drone_info.owner_id)
+            await self.send(msg_company)
+            # self.agent.log.debug(f"Sent status update to owner {self.agent.owner_id}: {drone_info.battery_percent}%")

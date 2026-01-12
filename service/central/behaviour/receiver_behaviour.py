@@ -50,11 +50,11 @@ class ReceiverBehaviour(CyclicBehaviour):
         min_cost = float('inf')
 
         for drone in self.agent.drones:
-            if not drone.available:
+            if not drone.available or drone.owner_id is not None:
                 continue
 
             if drone.battery_percent < 20:
-                self.log.debug(f"Drone {drone.id} skipped: Low battery ({drone.battery_percent}%)")
+                self.log.debug(f"Drone {drone.id} skipped: low battery ({drone.battery_percent}%)")
                 continue
 
             if drone.capacity_kg < packet.package_weight:
@@ -62,14 +62,23 @@ class ReceiverBehaviour(CyclicBehaviour):
                 continue
 
             dist_to_pickup = drone.current_position.distance_to(packet.pickup_location)
+
             dist_delivery = packet.pickup_location.distance_to(packet.client_location)
-            total_distance = dist_to_pickup + dist_delivery
 
-            estimated_cost = _BASE_FEE + (total_distance * _PRICE_PER_KM)
+            dist_return = packet.client_location.distance_to(packet.pickup_location)
 
-            if estimated_cost > packet.company_budget:
-                self.log.debug(f"Drone {drone.id} skipped: over budget ({estimated_cost:.2f} > {packet.company_budget})")
+            cost_to_pickup = drone.calculate_consumption(dist_to_pickup, 0.0)
+
+            cost_mission = drone.calculate_delivery_battery(dist_return, dist_delivery, packet.package_weight)
+
+            total_battery_needed = cost_to_pickup + cost_mission
+
+            if drone.battery_percent < total_battery_needed:
+                self.log.debug(f"Drone {drone.id} skipped: insufficient battery for full trip (has: {drone.battery_percent:.2f}%, needs: {total_battery_needed:.2f}%)")
                 continue
+
+            total_distance_billable = dist_to_pickup + dist_delivery
+            estimated_cost = _BASE_FEE + (total_distance_billable * _PRICE_PER_KM)
 
             if estimated_cost < min_cost:
                 min_cost = estimated_cost

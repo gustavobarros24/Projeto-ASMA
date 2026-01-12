@@ -252,21 +252,30 @@ class ReceiverBehaviour( CyclicBehaviour ):
 
 	async def handle_drone_release(self, packet: DroneStatusPacket):
 		log = self.log
-		updated_drone = packet.drone_info
-		drone_id = updated_drone.id
+		updated_drone_info = packet.drone_info
+		drone_id = updated_drone_info.id
 
 		if drone_id in self.borrowed_drones:
-			log.info(f"Borrowed drone {drone_id} finished delivery: returning to lender...")
-			await self.return_borrowed_drone(drone_id)
+			if updated_drone_info.available:
+				log.info(f"Borrowed drone {drone_id} finished delivery: returning to lender...")
+				await self.return_borrowed_drone(drone_id)
+			else:
+				self.borrowed_drones[drone_id]['drone'] = updated_drone_info
 			return
 
-		is_rented = any(d.id == drone_id for d in self.agent.rented_drones)
+		found = False
+		for i, drone in enumerate(self.agent.rented_drones):
+			if drone.id.upper() == drone_id.upper():
+				self.agent.rented_drones[i] = updated_drone_info
+				found = True
 
-		if is_rented:
-			self.agent.rented_drones = [d for d in self.agent.rented_drones if d.id != drone_id]
-			log.info(f"Drone {drone_id} finished delivery!")
-		else:
-			log.debug(f"Received update from drone {drone_id} not currently rented: ignoring....")
+				if updated_drone_info.available:
+					#log.debug(f"Drone {drone_id} updated: (battery: {updated_drone_info.battery_percent:.1f}%)")
+					pass
+				break
+
+		if not found:
+			log.debug(f"Received update from drone {drone_id} not in fleet: ignoring...")
 
 	async def handle_job_refusal(self, packet: RefuseJobPacket):
 		log = self.log

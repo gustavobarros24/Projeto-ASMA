@@ -52,6 +52,10 @@ class ReceiverBehaviour( CyclicBehaviour ):
 		item_id = item.id
 		company_id = item.company_id
 
+		if order_id not in self.agent.pending_orders:
+			log.warning(f"Ignored unexpected delivery packet for unknown order ID: {order_id}")
+			return
+
 		expected_item_id = self.agent.pending_orders.get(order_id)
 
 		if expected_item_id == item_id:

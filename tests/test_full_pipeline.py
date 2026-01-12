@@ -151,6 +151,12 @@ async def test_full_pipeline():
             _DEFAULT_PASSWORD,
             drone_data
         )
+
+        if i == 0:
+            drone_agent.drone_info.current_position = walmart_location
+        else:
+            drone_agent.drone_info.current_position = amazon_location
+
         await drone_agent.start(auto_register=True)
         drone_agents.append(drone_agent)
         

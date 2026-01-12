@@ -28,8 +28,10 @@ class DroneInfo:
 	battery_percent: int
 	current_position: GeoCoord
 	available: bool
+	owner_id: Optional[str] = None
+	base_location: Optional[GeoCoord] = None
 
-	def __init__( self, id: str, model: str, capacity_kg: float, speed_kmh: float, battery_percent: int ):
+	def __init__( self, id: str, model: str, capacity_kg: float, speed_kmh: float, battery_percent: int, owner_id: str = None, base_location: GeoCoord = None):
 		self.id = id
 		self.model = model
 		self.capacity_kg = capacity_kg
@@ -37,14 +39,21 @@ class DroneInfo:
 		self.battery_percent = battery_percent
 		self.current_position = GeoCoord( CENTRAL_LAT, CENTRAL_LON )
 		self.available = True
+		self.owner_id = owner_id
+		self.base_location = base_location
 
-	def can_send( self, package: Package ) -> bool:
-		battery_needed = self.battery_needed_percent( package )
-		if self.battery_percent >= battery_needed:
-			return True
-		else:
-			print( f"Drone { self.id } reject: battery { self.battery_percent }% < needed {battery_needed:.2f}%" )
+	def can_send(self, package: Package) -> bool:
+		if package.item.weight_kg > self.capacity_kg:
+			print(f"Drone {self.id} reject: too heavy ({package.item.weight_kg}kg > capacity {self.capacity_kg}kg)")
 			return False
+
+		battery_needed = self.battery_needed_percent(package)
+
+		if self.battery_percent < battery_needed:
+			print(f"Drone {self.id} reject: battery {self.battery_percent}% < needed {battery_needed:.2f}%")
+			return False
+
+		return True
 
 	def calculate_consumption(self, distance_km: float, item_weight_kg: float = 0.0) -> float:
 		per_km_cost = (

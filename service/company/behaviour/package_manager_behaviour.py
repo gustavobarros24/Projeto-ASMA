@@ -50,7 +50,7 @@ class PackageManagerBehaviour( PeriodicBehaviour ):
 		if not sent:
 			log.info( "Package not sent..." )
 
-			log.info( "Creating request drone packet..." )
+			log.info( "Creating RequestDronePacket..." )
 			packet = RequestDronePacket(
 				sender_id=self.agent.jid.node,
 				company_budget=self.agent.budget,
