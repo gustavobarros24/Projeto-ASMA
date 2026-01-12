@@ -26,6 +26,24 @@
         "lon": -87.640000
       },
       "budget": 7500.00
+    },
+    {
+      "id": "ANA",
+      "name": "Ana Oliveira",
+      "location": {
+        "lat": 41.880000,
+        "lon": -87.620000
+      },
+      "budget": 4500.00
+    },
+    {
+      "id": "LUIS",
+      "name": "Luis Ferreira",
+      "location": {
+        "lat": 41.892000,
+        "lon": -87.635000
+      },
+      "budget": 6000.00
     }
   ]
 }

@@ -27,7 +27,7 @@ def get_logger( name: str, log_dir: str = ".", log_filename: str = None, console
 			'%(asctime)s [%(name)s] %(levelname)s: %(message)s'
 		)
 
-		file_handler = logging.FileHandler( log_path, mode = 'w' )
+		file_handler = logging.FileHandler( log_path, mode = 'w', encoding='utf-8' )
 		file_handler.setFormatter( formatter )
 		logger.addHandler( file_handler )
 

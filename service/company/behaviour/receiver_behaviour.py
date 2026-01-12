@@ -31,7 +31,7 @@ class ReceiverBehaviour( CyclicBehaviour ):
 		if not msg:
 			return
 
-		log.info( "Received a message..." )
+		#log.info( "Received a message..." )
 		try:
 			packet = Packet.deserialize( msg.body )
 		except Exception:
@@ -60,7 +60,7 @@ class ReceiverBehaviour( CyclicBehaviour ):
 			log.info( f"Received drone returned notification from { packet.sender_id }..." )
 			await self.handle_drone_returned( packet )
 		elif isinstance(packet, DroneStatusPacket):
-			log.info(f"Received status update from drone {packet.sender_id}...")
+			#log.info(f"Received status update from drone {packet.sender_id}...")
 			await self.handle_drone_release(packet)
 		elif isinstance(packet, RefuseJobPacket):
 			log.warning(f"Drone {packet.sender_id} refused job: {packet.reason}")
