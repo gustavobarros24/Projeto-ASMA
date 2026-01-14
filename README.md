@@ -36,7 +36,7 @@ For SPADE to work, the DOMAIN needs to be the PC name.
 
 ## Teste rápido de multiplos clientes
 
-**A forma mais simples de executar tudo num único processo!**
+**A forma mais simples de executar tudo num único processo! wow**
 
 ### Executar tudo de uma vez
 ```bash
