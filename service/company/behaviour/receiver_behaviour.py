@@ -258,6 +258,8 @@ class ReceiverBehaviour( CyclicBehaviour ):
 		if drone_id in self.borrowed_drones:
 			if updated_drone_info.available:
 				log.info(f"Borrowed drone {drone_id} finished delivery: returning to lender...")
+				# Remove completed package from delivery list
+				self._remove_completed_package(drone_id)
 				await self.return_borrowed_drone(drone_id)
 			else:
 				self.borrowed_drones[drone_id]['drone'] = updated_drone_info
@@ -271,11 +273,20 @@ class ReceiverBehaviour( CyclicBehaviour ):
 
 				if updated_drone_info.available:
 					#log.debug(f"Drone {drone_id} updated: (battery: {updated_drone_info.battery_percent:.1f}%)")
-					pass
+					# Remove completed package from delivery list
+					self._remove_completed_package(drone_id)
 				break
 
 		if not found:
 			log.debug(f"Received update from drone {drone_id} not in fleet: ignoring...")
+
+	def _remove_completed_package(self, drone_id: str):
+		"""Move completed package to delivered list."""
+		# N estamos a dar track de qual drone esta a enviar qual package
+		if self.agent.packages_in_delivery:
+			completed_package = self.agent.packages_in_delivery.pop(0)
+			self.agent.packages_delivered.append(completed_package)
+			self.log.info(f"Package {completed_package.order_id} delivered successfully by drone {drone_id}")
 
 	async def handle_job_refusal(self, packet: RefuseJobPacket):
 		log = self.log

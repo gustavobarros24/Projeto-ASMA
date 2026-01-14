@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empresa {{ company_id }} - Dashboard ASMA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }}
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-content {
+            flex: 1;
+        }
+        .header h1 {
+            color: #1e3c72;
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .nav {
+            display: flex;
+            gap: 15px;
+        }
+        .nav a {
+            color: #1e3c72;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 1em;
+        }
+        .nav a:hover {
+            background: #1e3c72;
+            color: white;
+        }
+        .company-info {
+            color: #666;
+            font-size: 1.2em;
+            line-height: 1.8;
+        }
+        .company-info p {
+            margin: 8px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-left: 6px solid #1e3c72;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            opacity: 0.05;
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(30, 60, 114, 0.3);
+        }
+        .stat-label {
+            color: #999;
+            font-size: 1em;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+        .section {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 1.8em;
+            color: #1e3c72;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #1e3c72;
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        th {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 18px;
+            text-align: left;
+            font-weight: 600;
+            color: white;
+            font-size: 1.05em;
+        }
+        th:first-child {
+            border-top-left-radius: 10px;
+        }
+        th:last-child {
+            border-top-right-radius: 10px;
+        }
+        td {
+            padding: 16px 18px;
+            border-bottom: 1px solid #e9ecef;
+            color: #333;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .refresh-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin-top: 20px;
+            transition: all 0.3s;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        .refresh-btn:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ba87c 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 1.2em;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1e3c72;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 1.1em;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            background: #e9ecef;
+            color: #495057;
+        }
+        .badge.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .badge.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>🏢 Empresa {{ company_id }}</h1>
+                <div class="company-info">
+                    <p><strong>📍 Localização:</strong> {{ location }}</p>
+                    <p><strong>💰 Orçamento:</strong> ${{ budget }} USD</p>
+                    <p><strong>🕐 Última Atualização:</strong> <span id="last-update">-</span></p>
+                </div>
+            </div>
+            <nav class="nav">
+                <a href="/">Dashboard</a>
+                <a href="/inventory">Inventário</a>
+                <a href="/packages">Pacotes</a>
+                <a href="/drones">Drones</a>
+            </nav>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">📦 Itens em Inventário</div>
+                <div class="stat-value" id="inventory-count">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">📊 Total de Produtos</div>
+                <div class="stat-value" id="total-quantity">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">💵 Valor Total do Inventário</div>
+                <div class="stat-value" id="total-value">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">🚁 Drones Alugados</div>
+                <div class="stat-value" id="drones-count">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">📦 Inventário de Produtos</h2>
+            <div id="inventory-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Carregando inventário...
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Gestão de Pacotes</h2>
+            <div id="packages-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Carregando pacotes...
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">🚁 Frota de Drones Alugados</h2>
+            <div id="drones-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Carregando drones...
+                </div>
+            </div>
+        </div>
+
+        <button class="refresh-btn" onclick="loadAllData()">🔄 Atualizar Dados</button>
+
+        <div class="footer">
+            <p>Sistema de Gestão Multi-Agentes ASMA © 2026</p>
+        </div>
+    </div>
+
+    <script>
+        function updateTimestamp() {
+            const now = new Date();
+            document.getElementById('last-update').textContent = now.toLocaleString('pt-PT');
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                document.getElementById('inventory-count').textContent = data.inventory_items;
+                document.getElementById('total-quantity').textContent = data.total_quantity;
+                document.getElementById('total-value').textContent = '$' + data.total_value.toFixed(2);
+                document.getElementById('drones-count').textContent = data.rented_drones;
+                
+                updateTimestamp();
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                document.getElementById('inventory-count').textContent = 'Erro';
+                document.getElementById('total-quantity').textContent = 'Erro';
+                document.getElementById('total-value').textContent = 'Erro';
+                document.getElementById('drones-count').textContent = 'Erro';
+            }
+        }
+
+        async function loadInventory() {
+            try {
+                const response = await fetch('/api/inventory');
+                const data = await response.json();
+                
+                const container = document.getElementById('inventory-container');
+                
+                if (data.inventory.length === 0) {
+                    container.innerHTML = '<div class="empty-state">📭 Nenhum item no inventário.</div>';
+                    return;
+                }
+                
+                let html = `
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome do Produto</th>
+                            <th>Preço (USD)</th>
+                            <th>Peso (kg)</th>
+                            <th>Descrição</th>
+                            <th>Empresa</th>
+                        </tr>
+                `;
+                
+                data.inventory.forEach(item => {
+                    html += `<tr>
+                        <td><span class="badge">${item.id}</span></td>
+                        <td><strong>${item.name}</strong></td>
+                        <td>$${item.price.toFixed(2)}</td>
+                        <td>${item.weight.toFixed(2)} kg</td>
+                        <td>${item.description || 'N/A'}</td>
+                        <td><span class="badge success">${item.company_id}</span></td>
+                    </tr>`;
+                });
+                
+                html += '</table>';
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('inventory-container').innerHTML = 
+                    '<div class="empty-state">❌ Erro ao carregar inventário.</div>';
+                console.error('Error loading inventory:', error);
+            }
+        }
+
+        async function loadPackages() {
+            try {
+                const response = await fetch('/api/packages');
+                const data = await response.json();
+                
+                const container = document.getElementById('packages-container');
+                
+                if (data.packages.length === 0) {
+                    container.innerHTML = '<div class="empty-state">📭 Nenhum pacote pendente.</div>';
+                    return;
+                }
+                
+                let html = `
+                    <table>
+                        <tr>
+                            <th>ID do Pedido</th>
+                            <th>Cliente</th>
+                            <th>Item</th>
+                            <th>Destino</th>
+                            <th>Peso</th>
+                            <th>Status</th>
+                        </tr>
+                `;
+                
+                data.packages.forEach(pkg => {
+                    let statusClass = 'warning';  // Default: Na Fila
+                    if (pkg.status === 'Em Entrega') statusClass = 'info';
+                    if (pkg.status === 'Entregue') statusClass = 'success';
+                    
+                    html += `<tr>
+                        <td><span class="badge">${pkg.order_id}</span></td>
+                        <td><span class="badge info">${pkg.client_id}</span></td>
+                        <td>${pkg.item_name} <small>(${pkg.item_id})</small></td>
+                        <td style="font-size: 0.9em;">${pkg.destination}</td>
+                        <td>${pkg.weight.toFixed(2)} kg</td>
+                        <td><span class="badge ${statusClass}">${pkg.status}</span></td>
+                    </tr>`;
+                });
+                
+                html += '</table>';
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('packages-container').innerHTML = 
+                    '<div class="empty-state">❌ Erro ao carregar pacotes.</div>';
+                console.error('Error loading packages:', error);
+            }
+        }
+
+        async function loadDrones() {
+            try {
+                const response = await fetch('/api/drones');
+                const data = await response.json();
+                
+                const container = document.getElementById('drones-container');
+                
+                if (data.drones.length === 0) {
+                    container.innerHTML = '<div class="empty-state">🚁 Nenhum drone alugado no momento.</div>';
+                    return;
+                }
+                
+                let html = `
+                    <table>
+                        <tr>
+                            <th>ID do Drone</th>
+                            <th>Modelo</th>
+                            <th>Capacidade</th>
+                            <th>Velocidade</th>
+                            <th>Bateria</th>
+                            <th>Status</th>
+                            <th>Posição</th>
+                        </tr>
+                `;
+                
+                data.drones.forEach(drone => {
+                    let batteryClass = 'success';
+                    if (drone.battery_level < 50) batteryClass = 'warning';
+                    if (drone.battery_level < 20) batteryClass = '';
+                    
+                    let statusClass = drone.available ? 'success' : 'warning';
+                    let statusText = drone.available ? 'Disponível' : 'Em uso';
+                    
+                    html += `<tr>
+                        <td><span class="badge">${drone.id}</span></td>
+                        <td>${drone.model}</td>
+                        <td>${drone.capacity_kg.toFixed(2)} kg</td>
+                        <td>${drone.speed_kmh.toFixed(1)} km/h</td>
+                        <td><span class="badge ${batteryClass}">${drone.battery_level}%</span></td>
+                        <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td style="font-size: 0.85em;">${drone.current_position}</td>
+                    </tr>`;
+                });
+                
+                html += '</table>';
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('drones-container').innerHTML = 
+                    '<div class="empty-state">❌ Erro ao carregar drones.</div>';
+                console.error('Error loading drones:', error);
+            }
+        }
+
+        async function loadAllData() {
+            await loadStats();
+            await loadInventory();
+            await loadPackages();
+            await loadDrones();
+        }
+
+        // Load data on page load
+        window.addEventListener('load', () => {
+            loadAllData();
+            updateTimestamp();
+        });
+        
+        // Auto-refresh every 5 seconds
+        setInterval(loadAllData, 5000);
+    </script>
+</body>
+</html>

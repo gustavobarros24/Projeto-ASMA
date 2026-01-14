@@ -44,6 +44,8 @@ class PackageManagerBehaviour( PeriodicBehaviour ):
 				await self.send( msg )
 
 				sent = True
+				# Add to delivery tracking
+				self.agent.packages_in_delivery.append(package)
 				log.info( f"Drone { drone.id } will send package: { package.order_id }..." )
 				break
 

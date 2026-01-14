@@ -26,6 +26,8 @@ _MANAGER_TIMEOUT = 2 # seconds
 class CompanyAgent( Agent ):
 	inventory: Dict[str, Item]
 	packages_to_send: Queue[Package]
+	packages_in_delivery: List[Package]  # Packages being delivered by drones
+	packages_delivered: List[Package]  # Packages successfully delivered
 	rented_drones: List[DroneInfo]
 	budget: float
 	location: GeoCoord
@@ -36,6 +38,8 @@ class CompanyAgent( Agent ):
 		self.location = _location
 		self.inventory = self._load_inventory( self.jid.node )
 		self.packages_to_send = Queue()
+		self.packages_in_delivery = []
+		self.packages_delivered = []
 		self.rented_drones = []
 
 		self.log = get_logger(

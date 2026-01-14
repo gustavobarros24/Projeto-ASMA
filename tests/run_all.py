@@ -2,6 +2,7 @@ import asyncio
 import spade
 from service.central.central_agent import CentralAgent
 from service.company.company_agent import CompanyAgent
+from service.company.web_ui import CompanyWebUI
 from service.drone.drone_agent import DroneAgent
 from client.client_agent import ClientAgent
 from client.web_ui import ClientWebUI
@@ -22,6 +23,7 @@ from service.central import web_server
 
 _DEFAULT_PASSWORD = "123"
 _WEB_PORT_START = 5001  # First client will use 5001, second 5002, etc.
+_COMPANY_WEB_PORT_START = 6001  # First company will use 6001, second 6002, etc.
 
 log = get_logger(name="run_all", log_dir="logs", console=True)
 
@@ -88,7 +90,10 @@ async def main():
     # Start Companies
     log.info("Starting Companies...")
     company_agents = []
-    for company in companies:
+    company_web_uis = []
+    for i, company in enumerate(companies):
+        web_port = _COMPANY_WEB_PORT_START + i
+        
         agent = CompanyAgent(
             company["jid"],
             company["password"],
@@ -97,6 +102,11 @@ async def main():
         )
         company_agents.append(agent)
         await agent.start(auto_register=True)
+        
+        # Start Web UI for this company
+        company_web_ui = CompanyWebUI(agent, port=web_port)
+        await company_web_ui.start()
+        company_web_uis.append(company_web_ui)
     
     # Start Drones
     log.info("Starting Drones...")
@@ -147,6 +157,11 @@ async def main():
     print(f" Sistema iniciado!")
     print(f"{'='*60}")
     print(f" Dashboard Central: http://127.0.0.1:5000")
+    print(f" Interfaces das Empresas:")
+    for i, company in enumerate(companies):
+        port = _COMPANY_WEB_PORT_START + i
+        company_id = company['jid'].split('@')[0]
+        print(f"   - {company_id}: http://localhost:{port}")
     print(f" Interfaces dos Clientes:")
     for i, client in enumerate(clients):
         port = _WEB_PORT_START + i
@@ -165,6 +180,8 @@ async def main():
             await client_agent.stop()
         for web_ui in web_uis:
             await web_ui.stop()
+        for company_web_ui in company_web_uis:
+            await company_web_ui.stop()
         for agent in company_agents:
             await agent.stop()
         for agent in drone_agents:
