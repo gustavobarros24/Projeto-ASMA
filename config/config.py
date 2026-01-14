@@ -8,8 +8,8 @@ import os
 ===============================================================================
 """
 
-DOMAIN = "localhost"
-#DOMAIN = os.getenv( "USERDOMAIN" )
+#DOMAIN = "localhost"
+DOMAIN = os.getenv( "USERDOMAIN" )
 
 CENTRAL_ID = "central"
 CENTRAL_LAT = 41.888866
